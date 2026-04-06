@@ -1,0 +1,31 @@
+{
+  "name": "bulk-property-bootstrap",
+  "description": "One bulk reference cell for relaxation, DOS, PDOS, dielectric validation, and general baseline calculations.",
+  "workflow_tags": [
+    "bulk",
+    "reference",
+    "dos",
+    "pdos",
+    "validation"
+  ],
+  "required_user_inputs": [
+    "bulk_source",
+    "bulk_value"
+  ],
+  "notes": [
+    "Set bulk_source to file, mp, cod, or url.",
+    "Keep the bulk file path relative to the project when using local structures."
+  ],
+  "entries": [
+    {
+      "label": "bulk_reference",
+      "source": "{{bulk_source}}",
+      "value": "{{bulk_value}}",
+      "filename": "bulk_reference.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_bulk_reference"
+    }
+  ],
+  "derived": [],
+  "slabs": []
+}

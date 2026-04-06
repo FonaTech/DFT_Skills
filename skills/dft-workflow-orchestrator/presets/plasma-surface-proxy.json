@@ -1,0 +1,54 @@
+{
+  "name": "plasma-surface-proxy",
+  "description": "Surface-oriented intake for plasma-surface proxy studies with optional feedstock references.",
+  "workflow_tags": [
+    "plasma",
+    "surface",
+    "feedstock",
+    "reaction-proxy"
+  ],
+  "required_user_inputs": [
+    "plasma_surface_source",
+    "plasma_surface_value",
+    "feedstock_source",
+    "feedstock_value"
+  ],
+  "notes": [
+    "Use the feedstock entry for separate gas-phase relaxations or radical proxies.",
+    "This preset prepares structure seeds only; explicit plasma kinetics still need higher-level coupling."
+  ],
+  "entries": [
+    {
+      "label": "plasma_bulk",
+      "source": "{{plasma_surface_source}}",
+      "value": "{{plasma_surface_value}}",
+      "filename": "plasma_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_plasma_bulk"
+    },
+    {
+      "label": "feedstock_seed",
+      "source": "{{feedstock_source}}",
+      "value": "{{feedstock_value}}",
+      "filename": "feedstock_seed.cif",
+      "normalize": "none",
+      "poscar": "POSCAR_feedstock_seed"
+    }
+  ],
+  "derived": [],
+  "slabs": [
+    {
+      "source_label": "plasma_bulk",
+      "filename": "POSCAR_plasma_surface",
+      "miller_index": [
+        0,
+        0,
+        1
+      ],
+      "min_slab_size": 14.0,
+      "min_vacuum_size": 20.0,
+      "center_slab": true,
+      "in_unit_planes": false
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "band-transport-bulk",
+  "description": "Primitive-cell intake for band structure, effective mass, and carrier-transport workflows.",
+  "workflow_tags": [
+    "band-structure",
+    "transport",
+    "effective-mass",
+    "bulk"
+  ],
+  "required_user_inputs": [
+    "band_source",
+    "band_value"
+  ],
+  "notes": [
+    "Primitive normalization is used by default because it is usually more convenient for band-path generation.",
+    "Verify magnetic order and spin-orbit requirements before using transport observables."
+  ],
+  "entries": [
+    {
+      "label": "band_reference",
+      "source": "{{band_source}}",
+      "value": "{{band_value}}",
+      "filename": "band_reference.cif",
+      "normalize": "primitive",
+      "poscar": "POSCAR_band_reference"
+    }
+  ],
+  "derived": [],
+  "slabs": []
+}

@@ -1,0 +1,42 @@
+{
+  "name": "defect-supercell-screening",
+  "description": "Pristine bulk plus reusable supercell seed for vacancy, substitution, and trap-state studies.",
+  "workflow_tags": [
+    "defect",
+    "supercell",
+    "trap-state",
+    "bulk"
+  ],
+  "required_user_inputs": [
+    "defect_source",
+    "defect_value"
+  ],
+  "notes": [
+    "Edit the supercell scale before production if the defect concentration is too large.",
+    "Keep the pristine supercell as the direct reference for formation-energy bookkeeping."
+  ],
+  "entries": [
+    {
+      "label": "defect_bulk",
+      "source": "{{defect_source}}",
+      "value": "{{defect_value}}",
+      "filename": "defect_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_defect_bulk"
+    }
+  ],
+  "derived": [
+    {
+      "label": "defect_supercell",
+      "source_label": "defect_bulk",
+      "operation": "supercell",
+      "scaling_matrix": [
+        2,
+        2,
+        2
+      ],
+      "poscar": "POSCAR_defect_supercell"
+    }
+  ],
+  "slabs": []
+}

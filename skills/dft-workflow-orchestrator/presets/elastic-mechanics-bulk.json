@@ -1,0 +1,30 @@
+{
+  "name": "elastic-mechanics-bulk",
+  "description": "Bulk reference intake for elastic tensor, stress-strain, and mechanical stability calculations.",
+  "workflow_tags": [
+    "elastic",
+    "mechanics",
+    "bulk",
+    "stress-strain"
+  ],
+  "required_user_inputs": [
+    "mechanics_source",
+    "mechanics_value"
+  ],
+  "notes": [
+    "Keep the bulk cell fully converged before strain or stress perturbations.",
+    "For low-symmetry systems, document the chosen deformation set in workflow notes."
+  ],
+  "entries": [
+    {
+      "label": "mechanical_bulk",
+      "source": "{{mechanics_source}}",
+      "value": "{{mechanics_value}}",
+      "filename": "mechanical_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_mechanical_bulk"
+    }
+  ],
+  "derived": [],
+  "slabs": []
+}

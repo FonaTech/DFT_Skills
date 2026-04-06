@@ -1,0 +1,54 @@
+{
+  "name": "reaction-pathway-surface-bootstrap",
+  "description": "Catalyst slab plus gas or molecular reference seed for reaction pathway and intermediate mapping.",
+  "workflow_tags": [
+    "reaction-pathway",
+    "surface",
+    "adsorbate",
+    "mechanism"
+  ],
+  "required_user_inputs": [
+    "catalyst_source",
+    "catalyst_value",
+    "gas_seed_source",
+    "gas_seed_value"
+  ],
+  "notes": [
+    "Use the gas or molecular seed as the reference geometry for separate gas-phase relaxations.",
+    "Add multiple intermediates later in the project workflow instead of hardcoding them here."
+  ],
+  "entries": [
+    {
+      "label": "catalyst_bulk",
+      "source": "{{catalyst_source}}",
+      "value": "{{catalyst_value}}",
+      "filename": "catalyst_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_catalyst_bulk"
+    },
+    {
+      "label": "gas_seed",
+      "source": "{{gas_seed_source}}",
+      "value": "{{gas_seed_value}}",
+      "filename": "gas_seed.cif",
+      "normalize": "none",
+      "poscar": "POSCAR_gas_seed"
+    }
+  ],
+  "derived": [],
+  "slabs": [
+    {
+      "source_label": "catalyst_bulk",
+      "filename": "POSCAR_reaction_surface",
+      "miller_index": [
+        1,
+        1,
+        1
+      ],
+      "min_slab_size": 12.0,
+      "min_vacuum_size": 18.0,
+      "center_slab": true,
+      "in_unit_planes": true
+    }
+  ]
+}

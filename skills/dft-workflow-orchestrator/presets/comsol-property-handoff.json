@@ -1,0 +1,30 @@
+{
+  "name": "comsol-property-handoff",
+  "description": "Bulk intake for extracting elastic, dielectric, thermal, or transport properties for continuum-model handoff.",
+  "workflow_tags": [
+    "comsol",
+    "property-handoff",
+    "continuum",
+    "bulk"
+  ],
+  "required_user_inputs": [
+    "property_source",
+    "property_value"
+  ],
+  "notes": [
+    "Use this preset when DFT acts as the upstream provider of tensors or material constants.",
+    "Keep the same reference cell across all property extractions to avoid handoff inconsistency."
+  ],
+  "entries": [
+    {
+      "label": "property_bulk",
+      "source": "{{property_source}}",
+      "value": "{{property_value}}",
+      "filename": "property_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_property_bulk"
+    }
+  ],
+  "derived": [],
+  "slabs": []
+}

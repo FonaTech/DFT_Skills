@@ -1,0 +1,30 @@
+{
+  "name": "optics-dielectric-bulk",
+  "description": "Bulk reference intake for dielectric tensor, optical absorption, and related response calculations.",
+  "workflow_tags": [
+    "optics",
+    "dielectric",
+    "bulk",
+    "response"
+  ],
+  "required_user_inputs": [
+    "optics_source",
+    "optics_value"
+  ],
+  "notes": [
+    "Use this preset before static optics or dielectric jobs.",
+    "Switch to a primitive cell only if the symmetry handling stays consistent with the target observable."
+  ],
+  "entries": [
+    {
+      "label": "optical_bulk",
+      "source": "{{optics_source}}",
+      "value": "{{optics_value}}",
+      "filename": "optical_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_optical_bulk"
+    }
+  ],
+  "derived": [],
+  "slabs": []
+}

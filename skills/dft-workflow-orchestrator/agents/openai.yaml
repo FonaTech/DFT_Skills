@@ -1,0 +1,4 @@
+interface:
+  display_name: "DFT Workflow"
+  short_description: "Literature-to-VASP orchestration and monitoring"
+  default_prompt: "Use $dft-workflow-orchestrator to turn a paper claim or materials question into a reproducible DFT or VASP workflow with live run monitoring."

@@ -1,0 +1,42 @@
+{
+  "name": "phonon-thermal-transport",
+  "description": "Bulk-plus-supercell intake for phonon dispersions, force constants, and thermal transport workflows.",
+  "workflow_tags": [
+    "phonon",
+    "thermal-transport",
+    "supercell",
+    "bulk"
+  ],
+  "required_user_inputs": [
+    "phonon_source",
+    "phonon_value"
+  ],
+  "notes": [
+    "Adjust the supercell size to the intended force-constant cutoff and target thermal observable.",
+    "Keep force convergence tight before generating displaced structures."
+  ],
+  "entries": [
+    {
+      "label": "phonon_bulk",
+      "source": "{{phonon_source}}",
+      "value": "{{phonon_value}}",
+      "filename": "phonon_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_phonon_bulk"
+    }
+  ],
+  "derived": [
+    {
+      "label": "phonon_supercell",
+      "source_label": "phonon_bulk",
+      "operation": "supercell",
+      "scaling_matrix": [
+        2,
+        2,
+        2
+      ],
+      "poscar": "POSCAR_phonon_supercell"
+    }
+  ],
+  "slabs": []
+}

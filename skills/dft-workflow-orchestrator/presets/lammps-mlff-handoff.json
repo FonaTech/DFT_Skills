@@ -1,0 +1,42 @@
+{
+  "name": "lammps-mlff-handoff",
+  "description": "Structure intake for DFT reference generation before MLFF fitting or LAMMPS-scale handoff.",
+  "workflow_tags": [
+    "lammps",
+    "mlff",
+    "handoff",
+    "supercell"
+  ],
+  "required_user_inputs": [
+    "training_source",
+    "training_value"
+  ],
+  "notes": [
+    "Use the supercell as a seed for displaced snapshots, strain states, or active-learning batches.",
+    "Keep provenance clear so later classical or ML workflows can trace the DFT parent structure."
+  ],
+  "entries": [
+    {
+      "label": "training_bulk",
+      "source": "{{training_source}}",
+      "value": "{{training_value}}",
+      "filename": "training_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_training_bulk"
+    }
+  ],
+  "derived": [
+    {
+      "label": "training_supercell",
+      "source_label": "training_bulk",
+      "operation": "supercell",
+      "scaling_matrix": [
+        2,
+        2,
+        2
+      ],
+      "poscar": "POSCAR_training_supercell"
+    }
+  ],
+  "slabs": []
+}

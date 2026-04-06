@@ -1,0 +1,40 @@
+{
+  "name": "ferroelectric-polarization-bootstrap",
+  "description": "Paired reference intake for polar and non-polar structures used in polarization and switching analysis.",
+  "workflow_tags": [
+    "ferroelectric",
+    "polarization",
+    "switching",
+    "bulk"
+  ],
+  "required_user_inputs": [
+    "polar_source",
+    "polar_value",
+    "reference_source",
+    "reference_value"
+  ],
+  "notes": [
+    "Use the non-polar structure as a reference branch for Berry-phase or relative-polarization analysis.",
+    "Check whether epitaxial strain or octahedral rotations require a separate constrained cell setup."
+  ],
+  "entries": [
+    {
+      "label": "polar_phase",
+      "source": "{{polar_source}}",
+      "value": "{{polar_value}}",
+      "filename": "polar_phase.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_polar_phase"
+    },
+    {
+      "label": "reference_phase",
+      "source": "{{reference_source}}",
+      "value": "{{reference_value}}",
+      "filename": "reference_phase.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_reference_phase"
+    }
+  ],
+  "derived": [],
+  "slabs": []
+}

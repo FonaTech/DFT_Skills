@@ -1,0 +1,53 @@
+{
+  "name": "oxide-protonation-supercell",
+  "description": "Oxide host plus protonated seed for insertion, local bonding, and proton-coupled screening workflows.",
+  "workflow_tags": [
+    "protonation",
+    "oxide",
+    "insertion",
+    "supercell"
+  ],
+  "required_user_inputs": [
+    "oxide_source",
+    "oxide_value",
+    "anchor_species"
+  ],
+  "notes": [
+    "Set anchor_species to the cation species used to orient the inserted proton away from the nearest coordination center.",
+    "Adjust the supercell and proton count if the target concentration must be diluted further."
+  ],
+  "entries": [
+    {
+      "label": "oxide_bulk",
+      "source": "{{oxide_source}}",
+      "value": "{{oxide_value}}",
+      "filename": "oxide_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_oxide_bulk"
+    }
+  ],
+  "derived": [
+    {
+      "label": "oxide_supercell",
+      "source_label": "oxide_bulk",
+      "operation": "supercell",
+      "scaling_matrix": [
+        2,
+        2,
+        2
+      ],
+      "poscar": "POSCAR_oxide_supercell"
+    },
+    {
+      "label": "protonated_seed",
+      "source_label": "oxide_supercell",
+      "operation": "protonate",
+      "proton_count": 1,
+      "host_species": "O",
+      "anchor_species": "{{anchor_species}}",
+      "bond_length": 1.0,
+      "poscar": "POSCAR_protonated_seed"
+    }
+  ],
+  "slabs": []
+}

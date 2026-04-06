@@ -1,0 +1,42 @@
+{
+  "name": "migration-neb-bootstrap",
+  "description": "Host structure intake and supercell seed for migration pathways and NEB endpoint construction.",
+  "workflow_tags": [
+    "migration",
+    "neb",
+    "supercell",
+    "ionic-transport"
+  ],
+  "required_user_inputs": [
+    "migration_source",
+    "migration_value"
+  ],
+  "notes": [
+    "Use the supercell as the common host for initial and final endpoint generation.",
+    "Adjust the supercell size to keep migrating images sufficiently separated."
+  ],
+  "entries": [
+    {
+      "label": "migration_bulk",
+      "source": "{{migration_source}}",
+      "value": "{{migration_value}}",
+      "filename": "migration_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_migration_bulk"
+    }
+  ],
+  "derived": [
+    {
+      "label": "migration_supercell",
+      "source_label": "migration_bulk",
+      "operation": "supercell",
+      "scaling_matrix": [
+        2,
+        2,
+        2
+      ],
+      "poscar": "POSCAR_migration_supercell"
+    }
+  ],
+  "slabs": []
+}

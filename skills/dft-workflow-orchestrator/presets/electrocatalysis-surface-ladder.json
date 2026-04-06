@@ -1,0 +1,44 @@
+{
+  "name": "electrocatalysis-surface-ladder",
+  "description": "Slab-oriented template for electrocatalysis workflows that need robust vacuum and surface normalization.",
+  "workflow_tags": [
+    "electrocatalysis",
+    "surface",
+    "potential",
+    "charge-transfer"
+  ],
+  "required_user_inputs": [
+    "electrocatalyst_source",
+    "electrocatalyst_value"
+  ],
+  "notes": [
+    "Use this as the structure seed before adding adsorbates, solvation proxies, or potential ladders.",
+    "Increase min_vacuum_size if dipole interactions remain significant."
+  ],
+  "entries": [
+    {
+      "label": "electrocatalyst_bulk",
+      "source": "{{electrocatalyst_source}}",
+      "value": "{{electrocatalyst_value}}",
+      "filename": "electrocatalyst_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_electrocatalyst_bulk"
+    }
+  ],
+  "derived": [],
+  "slabs": [
+    {
+      "source_label": "electrocatalyst_bulk",
+      "filename": "POSCAR_electrocatalyst_surface",
+      "miller_index": [
+        0,
+        0,
+        1
+      ],
+      "min_slab_size": 12.0,
+      "min_vacuum_size": 20.0,
+      "center_slab": true,
+      "in_unit_planes": false
+    }
+  ]
+}

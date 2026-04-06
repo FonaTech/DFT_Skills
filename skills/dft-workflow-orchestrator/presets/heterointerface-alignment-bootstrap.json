@@ -1,0 +1,67 @@
+{
+  "name": "heterointerface-alignment-bootstrap",
+  "description": "Film and substrate intake with slab seeds for interface band alignment and charge-transfer construction.",
+  "workflow_tags": [
+    "heterointerface",
+    "band-alignment",
+    "charge-transfer",
+    "slab"
+  ],
+  "required_user_inputs": [
+    "film_source",
+    "film_value",
+    "substrate_source",
+    "substrate_value"
+  ],
+  "notes": [
+    "Use the generated slabs as constituents before explicit lattice matching and registry scans.",
+    "Document the strain allocation between film and substrate in workflow notes."
+  ],
+  "entries": [
+    {
+      "label": "film_bulk",
+      "source": "{{film_source}}",
+      "value": "{{film_value}}",
+      "filename": "film_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_film_bulk"
+    },
+    {
+      "label": "substrate_bulk",
+      "source": "{{substrate_source}}",
+      "value": "{{substrate_value}}",
+      "filename": "substrate_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_substrate_bulk"
+    }
+  ],
+  "derived": [],
+  "slabs": [
+    {
+      "source_label": "film_bulk",
+      "filename": "POSCAR_film_surface",
+      "miller_index": [
+        0,
+        0,
+        1
+      ],
+      "min_slab_size": 10.0,
+      "min_vacuum_size": 18.0,
+      "center_slab": true,
+      "in_unit_planes": false
+    },
+    {
+      "source_label": "substrate_bulk",
+      "filename": "POSCAR_substrate_surface",
+      "miller_index": [
+        0,
+        0,
+        1
+      ],
+      "min_slab_size": 10.0,
+      "min_vacuum_size": 18.0,
+      "center_slab": true,
+      "in_unit_planes": false
+    }
+  ]
+}

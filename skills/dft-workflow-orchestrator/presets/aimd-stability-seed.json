@@ -1,0 +1,42 @@
+{
+  "name": "aimd-stability-seed",
+  "description": "Bulk-plus-supercell intake for ab initio molecular dynamics stability and disorder sampling.",
+  "workflow_tags": [
+    "aimd",
+    "molecular-dynamics",
+    "supercell",
+    "stability"
+  ],
+  "required_user_inputs": [
+    "aimd_source",
+    "aimd_value"
+  ],
+  "notes": [
+    "Increase the supercell size if local disorder or diffusion events are artificially constrained.",
+    "Use the same normalized structure as the reference for static relax and MD initialization."
+  ],
+  "entries": [
+    {
+      "label": "aimd_bulk",
+      "source": "{{aimd_source}}",
+      "value": "{{aimd_value}}",
+      "filename": "aimd_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_aimd_bulk"
+    }
+  ],
+  "derived": [
+    {
+      "label": "aimd_supercell",
+      "source_label": "aimd_bulk",
+      "operation": "supercell",
+      "scaling_matrix": [
+        2,
+        2,
+        2
+      ],
+      "poscar": "POSCAR_aimd_supercell"
+    }
+  ],
+  "slabs": []
+}

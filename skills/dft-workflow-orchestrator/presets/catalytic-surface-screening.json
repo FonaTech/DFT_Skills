@@ -1,0 +1,44 @@
+{
+  "name": "catalytic-surface-screening",
+  "description": "Bulk-to-slab intake for catalytic adsorption, dissociation, and surface stability screening.",
+  "workflow_tags": [
+    "catalysis",
+    "surface",
+    "adsorption",
+    "dissociation"
+  ],
+  "required_user_inputs": [
+    "surface_source",
+    "surface_value"
+  ],
+  "notes": [
+    "Edit miller_index and slab thickness for the target facet before production runs.",
+    "Use a thicker vacuum or dipole corrections when the surface is polar."
+  ],
+  "entries": [
+    {
+      "label": "surface_parent",
+      "source": "{{surface_source}}",
+      "value": "{{surface_value}}",
+      "filename": "surface_parent.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_surface_parent"
+    }
+  ],
+  "derived": [],
+  "slabs": [
+    {
+      "source_label": "surface_parent",
+      "filename": "POSCAR_surface_111",
+      "miller_index": [
+        1,
+        1,
+        1
+      ],
+      "min_slab_size": 12.0,
+      "min_vacuum_size": 18.0,
+      "center_slab": true,
+      "in_unit_planes": true
+    }
+  ]
+}
