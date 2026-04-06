@@ -17,6 +17,14 @@ Repository-level docs:
 - license: [LICENSE](./LICENSE)
 - third-party and copyright boundaries: [THIRD_PARTY_AND_COPYRIGHT.md](./THIRD_PARTY_AND_COPYRIGHT.md)
 
+GitHub-friendly repository adapters:
+
+- Claude Code metadata and notes: [`claude-plugin/`](./claude-plugin/)
+- Codex install notes: [`codex/`](./codex/)
+- OpenCode install notes: [`opencode/`](./opencode/)
+
+Those repository folders are intentionally visible for GitHub upload and browsing. Actual platform installs still go to runtime-native paths such as `.claude/`, `.opencode/`, `~/.codex/`, and `~/.agents/`.
+
 `Clouds_Coder.py` supports three compatible ways to see this bundle.
 
 ## Mode 1: Direct Skills Root

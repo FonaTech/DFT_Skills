@@ -6,7 +6,7 @@
 
 本仓库提供一个可复用的核心 skill 包 `dft-workflow-orchestrator`，以及与之配套的 references、case studies、presets 和 scripts，用于把文献驱动的计算物理 / 计算材料任务整理成可执行、可复现的工程化工作流。
 
-本仓库首先针对同源生态的 [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder) 做专门优化，尤其是面向 `Clouds_Coder` 的技能发现、按需加载、entrypoint 导航、RAG 优先级和运行边界控制。同时，它也保持对 Codex、Claude Code、OpenCode 的适配性，不做单平台绑定。
+本仓库首先针对同源生态的 [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder) 做专门优化，尤其是面向 Clouds_Coder 的技能发现、按需加载、entrypoint 导航、RAG 优先级和运行边界控制。同时，它也保持对 Codex、Claude Code、OpenCode 的适配性，不做单平台绑定。
 
 ## GitHub 快速跳转
 
@@ -17,6 +17,137 @@
 - 首要优化目标：`FonaTech/Clouds-Coder` 生态中的 `Clouds_Coder`
 - 一等适配目标：Codex、Claude Code、OpenCode
 - 设计原则：以 Clouds 为优先优化对象，同时保持 skill 的跨平台可移植性
+
+## 架构总览
+
+本仓库以一个核心 skill 为中心组织，外围挂接平台无关的 scientific assets，并针对 `Clouds_Coder` 做优先优化。
+
+```mermaid
+flowchart TB
+    U[User Goal or Literature Claim]
+    P[Runtime Probe]
+    S[dft-workflow-orchestrator]
+    R[References]
+    C[Case Studies]
+    T[Presets]
+    H[Helper Scripts]
+    W[Project Workspace]
+    J[Rendered Jobs]
+    M[Live Monitoring]
+    O[Results and Summaries]
+
+    U --> P --> S
+    S --> R
+    S --> C
+    S --> T
+    S --> H
+    R --> W
+    C --> W
+    T --> W
+    H --> W
+    W --> J --> M --> O
+```
+
+## 关键框架子架构图
+
+### 1. Clouds 优先的发现与按需加载
+
+这一层对应与 [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder) 同源生态的优先适配路径。
+
+```mermaid
+flowchart LR
+    A[Clouds_Coder]
+    B[Skill Discovery]
+    C[Frontmatter Contract]
+    D[Entrypoint Manifest]
+    E[Compact Load]
+    F[Selective Deep Read]
+    G[References or Cases or Presets or Scripts]
+    H[Project Outputs]
+
+    A --> B --> C --> D --> E --> F --> G --> H
+```
+
+### 2. 知识收集与理论归因链路
+
+只要当前节点的信息已经足够支持理论判断和实验编排，就会提前停止继续收集。
+
+```mermaid
+flowchart TD
+    A[Need More Theory Context]
+    B{Runtime}
+    C[Uploaded or Local Files]
+    D{Enough Information}
+    E[Local RAG]
+    F[Online Retrieval]
+    G[Model Knowledge]
+    H[Claim Matrix and Method Routing]
+
+    A --> B
+    B -->|Clouds_Coder| C
+    B -->|Codex or Claude Code or OpenCode| C
+    C --> D
+    D -->|Yes| H
+    D -->|No on Clouds_Coder| E
+    D -->|No on other runtimes| F
+    E --> D
+    F --> D
+    D -->|Still insufficient| G
+    G --> H
+```
+
+### 3. 跨平台封装与镜像布局
+
+仓库内保持 GitHub 可见的适配目录，再由同步脚本落地到各平台实际使用的隐藏运行时目录。
+
+```mermaid
+flowchart TB
+    A[skills/dft-workflow-orchestrator]
+    B[claude-plugin/]
+    C[codex/]
+    D[opencode/]
+    E[agents/openai.yaml]
+    F[sync_skill_to_platforms.py]
+    G[.claude or ~/.claude targets]
+    H[.opencode or ~/.config/opencode targets]
+    I[~/.codex or ~/.agents targets]
+    J[Shared references cases presets scripts]
+
+    A --> B
+    A --> C
+    A --> D
+    A --> E
+    A --> F
+    A --> J
+    F --> G
+    F --> H
+    F --> I
+    B --> J
+    C --> J
+    D --> J
+```
+
+### 4. 执行与后台监控回路
+
+这一层的目标是在后台计算运行时持续拉取状态、识别偏离、并及时回到方法或作业层做修正。
+
+```mermaid
+flowchart LR
+    A[Preflight]
+    B[Knowledge Packet]
+    C[Structure Intake]
+    D[Method Selection]
+    E[Project Scaffold]
+    F[Job Rendering]
+    G[Queue Launch]
+    H[Live Status Polling]
+    I[Convergence or Failure Triage]
+    J[Summary and Next-Step Routing]
+
+    A --> B --> C --> D --> E --> F --> G --> H --> I --> J
+    I -->|needs adjustment| D
+    I -->|needs rerun| F
+```
 
 ## 仓库包含内容
 
@@ -47,9 +178,9 @@ DFT_Skills/
 ├── INSTALL.md
 ├── LICENSE
 ├── THIRD_PARTY_AND_COPYRIGHT.md
-├── .claude-plugin/
-├── .codex/
-├── .opencode/
+├── claude-plugin/
+├── codex/
+├── opencode/
 └── skills/
     └── dft-workflow-orchestrator/
         ├── SKILL.md
@@ -68,9 +199,11 @@ DFT_Skills/
 
 其他平台安装说明：
 
-- [`.claude-plugin/INSTALL.md`](./.claude-plugin/INSTALL.md)
-- [`.codex/INSTALL.md`](./.codex/INSTALL.md)
-- [`.opencode/INSTALL.md`](./.opencode/INSTALL.md)
+- [`claude-plugin/INSTALL.md`](./claude-plugin/INSTALL.md)
+- [`codex/INSTALL.md`](./codex/INSTALL.md)
+- [`opencode/INSTALL.md`](./opencode/INSTALL.md)
+
+为了方便 GitHub 展示和手动上传，仓库内使用可见目录 `claude-plugin/`、`codex/`、`opencode/`。真正安装到平台时，仍然会落到 `.claude/`、`.opencode/`、`~/.codex/`、`~/.agents/` 等运行时原生路径。
 
 ## Clouds_Coder 专门适配点
 
@@ -92,8 +225,8 @@ python3 DFT_Skills/skills/dft-workflow-orchestrator/scripts/verify_clouds_compat
 虽然本仓库首先为 Clouds 优化，但并不依赖 Clouds 专属机制才能工作。
 
 - Codex 通过标准 `SKILL.md` 和 `agents/openai.yaml` 适配
-- Claude Code 通过 `.claude/skills/...` 与 `.claude-plugin` 元数据适配
-- OpenCode 通过 `.opencode/skills/...` 适配
+- Claude Code 通过可见的 `claude-plugin/` 元数据配合 `.claude/skills/...` 安装路径适配
+- OpenCode 通过可见的 `opencode/` 安装辅助目录配合 `.opencode/skills/...` 路径适配
 - 核心 scientific workflow、case、preset、script 均保持相对路径和平台中立
 
 ## VASP 与第三方边界

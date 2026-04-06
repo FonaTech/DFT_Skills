@@ -30,5 +30,5 @@ This creates:
 
 ## Optional plugin-style metadata
 
-The package also ships `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`.
+The repository also ships `claude-plugin/plugin.json` and `claude-plugin/marketplace.json`.
 Treat those as metadata helpers only. The `.claude/skills/...` install path is the compatibility baseline.

@@ -6,7 +6,7 @@ Cross-platform DFT and VASP workflow skills for Clouds_Coder, Codex, Claude Code
 
 This repository packages one reusable skill bundle, `dft-workflow-orchestrator`, plus its references, case studies, presets, and helper scripts. The goal is to turn literature-grounded computational-physics tasks into reproducible project packets without tying the workflow to one single agent runtime.
 
-It is optimized first for the same ecosystem as [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder), especially for `Clouds_Coder` discovery, compact skill loading, entrypoint-guided reads, and RAG-aware theory grounding. At the same time, the repository is packaged to remain portable across Codex, Claude Code, and OpenCode.
+It is optimized first for the same ecosystem as [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder), especially for Clouds_Coder discovery, compact skill loading, entrypoint-guided reads, and RAG-aware theory grounding. At the same time, the repository is packaged to remain portable across Codex, Claude Code, and OpenCode.
 
 ## GitHub Quick Links
 
@@ -17,6 +17,137 @@ It is optimized first for the same ecosystem as [FonaTech/Clouds-Coder](https://
 - primary optimization target: `Clouds_Coder` in the `FonaTech/Clouds-Coder` ecosystem
 - first-class portability targets: Codex, Claude Code, OpenCode
 - design principle: Clouds-first optimization without sacrificing cross-platform skill portability
+
+## Architecture Overview
+
+The repository is organized as one Clouds-first skill bundle with platform-neutral scientific assets and runtime-specific mirrors around it.
+
+```mermaid
+flowchart TB
+    U[User Goal or Literature Claim]
+    P[Runtime Probe]
+    S[dft-workflow-orchestrator]
+    R[References]
+    C[Case Studies]
+    T[Presets]
+    H[Helper Scripts]
+    W[Project Workspace]
+    J[Rendered Jobs]
+    M[Live Monitoring]
+    O[Results and Summaries]
+
+    U --> P --> S
+    S --> R
+    S --> C
+    S --> T
+    S --> H
+    R --> W
+    C --> W
+    T --> W
+    H --> W
+    W --> J --> M --> O
+```
+
+## Key Framework Sub-Architectures
+
+### 1. Clouds-First Discovery and On-Demand Loading
+
+This is the path optimized for the same ecosystem as [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder).
+
+```mermaid
+flowchart LR
+    A[Clouds_Coder]
+    B[Skill Discovery]
+    C[Frontmatter Contract]
+    D[Entrypoint Manifest]
+    E[Compact Load]
+    F[Selective Deep Read]
+    G[References or Cases or Presets or Scripts]
+    H[Project Outputs]
+
+    A --> B --> C --> D --> E --> F --> G --> H
+```
+
+### 2. Knowledge Grounding Cascade
+
+The collection chain stops early if the current tier is already sufficient for theory selection and experiment routing.
+
+```mermaid
+flowchart TD
+    A[Need More Theory Context]
+    B{Runtime}
+    C[Uploaded or Local Files]
+    D{Enough Information}
+    E[Local RAG]
+    F[Online Retrieval]
+    G[Model Knowledge]
+    H[Claim Matrix and Method Routing]
+
+    A --> B
+    B -->|Clouds_Coder| C
+    B -->|Codex or Claude Code or OpenCode| C
+    C --> D
+    D -->|Yes| H
+    D -->|No on Clouds_Coder| E
+    D -->|No on other runtimes| F
+    E --> D
+    F --> D
+    D -->|Still insufficient| G
+    G --> H
+```
+
+### 3. Cross-Platform Packaging Layout
+
+The repository keeps GitHub-visible adapter directories, while the sync script materializes the actual hidden runtime install targets.
+
+```mermaid
+flowchart TB
+    A[skills/dft-workflow-orchestrator]
+    B[claude-plugin/]
+    C[codex/]
+    D[opencode/]
+    E[agents/openai.yaml]
+    F[sync_skill_to_platforms.py]
+    G[.claude or ~/.claude targets]
+    H[.opencode or ~/.config/opencode targets]
+    I[~/.codex or ~/.agents targets]
+    J[Shared references cases presets scripts]
+
+    A --> B
+    A --> C
+    A --> D
+    A --> E
+    A --> F
+    A --> J
+    F --> G
+    F --> H
+    F --> I
+    B --> J
+    C --> J
+    D --> J
+```
+
+### 4. Execution and Live Monitoring Loop
+
+The execution side is designed to keep background calculations observable instead of waiting blindly for job completion.
+
+```mermaid
+flowchart LR
+    A[Preflight]
+    B[Knowledge Packet]
+    C[Structure Intake]
+    D[Method Selection]
+    E[Project Scaffold]
+    F[Job Rendering]
+    G[Queue Launch]
+    H[Live Status Polling]
+    I[Convergence or Failure Triage]
+    J[Summary and Next-Step Routing]
+
+    A --> B --> C --> D --> E --> F --> G --> H --> I --> J
+    I -->|needs adjustment| D
+    I -->|needs rerun| F
+```
 
 ## What This Repository Contains
 
@@ -45,9 +176,9 @@ DFT_Skills/
 ├── INSTALL.md
 ├── LICENSE
 ├── THIRD_PARTY_AND_COPYRIGHT.md
-├── .claude-plugin/
-├── .codex/
-├── .opencode/
+├── claude-plugin/
+├── codex/
+├── opencode/
 └── skills/
     └── dft-workflow-orchestrator/
         ├── SKILL.md
@@ -66,9 +197,11 @@ For the primary optimized runtime, `Clouds_Coder`, start with:
 
 Platform-specific install helpers are also provided in:
 
-- [`.claude-plugin/INSTALL.md`](./.claude-plugin/INSTALL.md)
-- [`.codex/INSTALL.md`](./.codex/INSTALL.md)
-- [`.opencode/INSTALL.md`](./.opencode/INSTALL.md)
+- [`claude-plugin/INSTALL.md`](./claude-plugin/INSTALL.md)
+- [`codex/INSTALL.md`](./codex/INSTALL.md)
+- [`opencode/INSTALL.md`](./opencode/INSTALL.md)
+
+The repository keeps these adapter directories visible so they can be uploaded to GitHub without relying on dot-prefixed folders. Actual installs still land in the runtime-native paths such as `.claude/`, `.opencode/`, `~/.codex/`, or `~/.agents/`.
 
 ## Clouds_Coder Compatibility
 
@@ -84,8 +217,8 @@ This package is structured to align with the actual `Clouds_Coder.py` skill load
 Even though the repository is optimized first for Clouds, it is not Clouds-only.
 
 - Codex support is carried by standard `SKILL.md` plus `agents/openai.yaml`
-- Claude Code support is carried by `.claude/skills/...` compatible mirroring and `.claude-plugin` metadata
-- OpenCode support is carried by `.opencode/skills/...` compatible mirroring
+- Claude Code support is carried by visible `claude-plugin/` metadata plus installs into `.claude/skills/...` compatible paths
+- OpenCode support is carried by visible `opencode/` helpers plus installs into `.opencode/skills/...` compatible paths
 - the scientific workflow, cases, presets, and scripts remain platform-neutral and path-relative
 
 You can verify this directly with:
