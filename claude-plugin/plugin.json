@@ -1,0 +1,21 @@
+{
+  "name": "dft-skills",
+  "displayName": "DFT Skills",
+  "description": "Cross-platform DFT and VASP workflow skills with project scaffolding, job rendering, and run summarization.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Local Build"
+  },
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "dft",
+    "vasp",
+    "materials",
+    "first-principles",
+    "ab-initio",
+    "computational-physics",
+    "workflow"
+  ],
+  "skills": "./skills/"
+}

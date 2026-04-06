@@ -1,0 +1,21 @@
+{
+  "name": "dft-skills",
+  "owner": {
+    "name": "Local Build"
+  },
+  "metadata": {
+    "description": "Cross-platform DFT and VASP workflow skills with project scaffolding, job rendering, and run summarization.",
+    "version": "0.2.0"
+  },
+  "plugins": [
+    {
+      "name": "dft-skills",
+      "description": "Systematic DFT and VASP orchestration skill with scaffolding, structure fetch, job rendering, and analysis helpers",
+      "source": "./",
+      "strict": true,
+      "skills": [
+        "./skills/dft-workflow-orchestrator"
+      ]
+    }
+  ]
+}
