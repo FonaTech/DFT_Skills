@@ -2,9 +2,9 @@
 
 [English](./README.md) | [日本語](./README_ja.md)
 
-面向 Clouds_Coder、Codex、Claude Code、OpenCode 的跨平台 DFT / VASP workflow skills。
+面向 Clouds_Coder、Codex、Claude Code、OpenCode 的跨平台 DFT、AIMD、MLIP/MLMD 与 FEM workflow skills。
 
-本仓库提供一个可复用的核心 skill 包 `dft-workflow-orchestrator`，以及与之配套的 references、case studies、presets 和 scripts，用于把文献驱动的计算物理 / 计算材料任务整理成可执行、可复现的工程化工作流。
+本仓库提供一个可复用的核心 skill 包 `dft-workflow-orchestrator`，以及配套的 references、case studies、presets 和 scripts。系统会先判断能够回答研究决策的最小尺度；只有确有必要时，才从 DFT 升级到 AIMD、经验证的 MLIP-MD、统计约化与 FEM，而不是默认把每个任务都做成多尺度。
 
 本仓库首先针对同源生态的 [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder) 做专门优化，尤其是面向 Clouds_Coder 的技能发现、按需加载、entrypoint 导航、RAG 优先级和运行边界控制。同时，它也保持对 Codex、Claude Code、OpenCode 的适配性，不做单平台绑定。
 
@@ -149,13 +149,46 @@ flowchart LR
     I -->|needs rerun| F
 ```
 
+### 5. 尺度洞察与研究主线控制
+
+复杂任务启动前可先向用户确认技术路线、目标深度、预期交付物和资源边界。执行过程中由研究主线、claim 验证门、受控分支、数据血缘与唯一优先下一动作持续校正方向。
+
+```mermaid
+flowchart LR
+    Q[研究决策]
+    S{最小充分尺度}
+    D[DFT]
+    A[AIMD]
+    M[MLIP or MLMD]
+    F[FEM]
+    R[研究主线]
+    B[有界分支]
+    L[数据与模型血缘]
+    V[经验证结论]
+
+    Q --> S
+    S --> D
+    S --> A
+    S --> M
+    S --> F
+    D --> R
+    A --> R
+    M --> R
+    F --> R
+    R --> B
+    R --> L
+    B --> V
+    L --> V
+```
+
 ## 仓库包含内容
 
 - `skills/dft-workflow-orchestrator/` 下的核心 agent skill
-- theory intake、method selection、project layout、platform interop 等 workflow 参考资料
-- 大幅扩充的工程案例库，覆盖催化、缺陷、迁移、能带、光学、力学、AIMD、plasma、LAMMPS、COMSOL 等方向
+- 尺度路由、复杂任务澄清、theory intake、AIMD、MLIP 选型/训练/主动学习、FEM 耦合、不确定性与平台互操作参考资料
+- 面向长任务的研究主线控制：claim gates、有界分支、数据/模型血缘、追加式决策日志和下一动作队列
+- 大幅扩充的工程案例库，覆盖催化、缺陷、迁移、能带、光学、力学、AIMD、有限温相行为、预训练 MLIP 筛选、主动学习 MLMD、DFT-FEM、DFT-MLIP-FEM 与高通量发现
 - 用于结构获取和项目起步的 preset manifests
-- 用于 preflight、structure intake、job render、queue execution、run monitoring、result summary 的辅助脚本
+- 用于跨栈 preflight、多尺度 scaffold、manifest 校验、MLIP 数据审计、ASE 代理推理/松弛、轨迹诊断、研究主线维护、structure intake、VASP job render、queue execution、run monitoring 与 result summary 的辅助脚本
 
 ## 支持的平台
 
@@ -207,12 +240,13 @@ DFT_Skills/
 
 ## Clouds_Coder 专门适配点
 
-本仓库已经按 `Clouds_Coder.py` 的真实 skill loader 行为做了对齐，并特别适配了 [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder) 这一路径：
+本仓库让源 `SKILL.md` 保持 Agent Skills 标准格式，并通过 Clouds 专用侧车清单实现 compact loading：
 
-- frontmatter 中包含 `name`、`description`、`aliases`、`triggers`、`keywords`、`runtime_compat`
-- 包含 `clouds_coder.preferred_tools`、`entrypoints`、`runtime_contract`
+- 标准源 frontmatter 只包含 `name` 与 `description`
+- `agents/clouds-coder.json` 保存 aliases、triggers、entrypoints、attachments、preferred tools 与 runtime contract
+- `scripts/sync_skill_to_platforms.py --targets clouds --mode copy` 只对生成的 Clouds 副本应用该 overlay
 - 资源被拆分为 entrypoints 与 attachments，支持按需读取，而不是一次性粗暴展开
-- skill body 长度被控制到可触发 Clouds compact-mode load，便于先加载 contract 和 resource manifest，再按需深读
+- 兼容性检查会验证标准源、overlay 和生成副本；若本地可导入 `Clouds_Coder`，还会实测 compact mode
 
 可以直接运行兼容性检查：
 
@@ -238,6 +272,7 @@ python3 DFT_Skills/skills/dft-workflow-orchestrator/scripts/verify_clouds_compat
 - 不包含 VASP 源码或二进制
 - 不包含 `POTCAR` 或 PAW 数据
 - 不镜像官方 VASP manual、portal 下载物或官方 wiki 存档
+- 不附带预训练 MLIP checkpoint、受限训练数据、专有 FEM 模型或求解器 license 文件
 - 脚本只会调用用户本地已合法获取的安装
 
 完整边界说明见：

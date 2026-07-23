@@ -2,9 +2,9 @@
 
 [中文](./README_zh.md) | [日本語](./README_ja.md)
 
-Cross-platform DFT and VASP workflow skills for Clouds_Coder, Codex, Claude Code, and OpenCode.
+Cross-platform DFT, AIMD, MLIP/MLMD, and FEM workflow skills for Clouds_Coder, Codex, Claude Code, and OpenCode.
 
-This repository packages one reusable skill bundle, `dft-workflow-orchestrator`, plus its references, case studies, presets, and helper scripts. The goal is to turn literature-grounded computational-physics tasks into reproducible project packets without tying the workflow to one single agent runtime.
+This repository packages one reusable skill bundle, `dft-workflow-orchestrator`, plus its references, case studies, presets, and helper scripts. It chooses the smallest sufficient physical scale, turns literature-grounded materials questions into reproducible projects, and can escalate from DFT to AIMD, validated MLIP-driven MD, statistical reduction, and FEM only when the scientific decision requires it.
 
 It is optimized first for the same ecosystem as [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder), especially for Clouds_Coder discovery, compact skill loading, entrypoint-guided reads, and RAG-aware theory grounding. At the same time, the repository is packaged to remain portable across Codex, Claude Code, and OpenCode.
 
@@ -149,13 +149,46 @@ flowchart LR
     I -->|needs rerun| F
 ```
 
+### 5. Scale Insight And Research-Spine Control
+
+The workflow does not assume every task is multiscale. Complex work is kept on course through a live objective, claim gates, bounded branches, data lineage, and one prioritized next action.
+
+```mermaid
+flowchart LR
+    Q[Scientific Decision]
+    S{Smallest Sufficient Scale}
+    D[DFT]
+    A[AIMD]
+    M[MLIP or MLMD]
+    F[FEM]
+    R[Research Spine]
+    B[Bounded Branches]
+    L[Artifact Lineage]
+    V[Validated Verdict]
+
+    Q --> S
+    S --> D
+    S --> A
+    S --> M
+    S --> F
+    D --> R
+    A --> R
+    M --> R
+    F --> R
+    R --> B
+    R --> L
+    B --> V
+    L --> V
+```
+
 ## What This Repository Contains
 
 - a portable agent skill under `skills/dft-workflow-orchestrator/`
-- workflow references for theory intake, method selection, project layout, and platform interop
-- expanded engineering case studies covering catalysis, defects, transport, optics, mechanics, AIMD, plasma, LAMMPS coupling, COMSOL handoff, and more
+- workflow references for scale routing, complex-task clarification, theory intake, AIMD, MLIP selection/training/active learning, FEM coupling, uncertainty, and platform interop
+- research-spine controls for claim gates, bounded branches, data/model lineage, append-only decisions, and prioritized next actions
+- expanded engineering case studies covering catalysis, defects, transport, optics, mechanics, AIMD, finite-temperature phase behavior, pretrained MLIP screening, active-learning MLMD, DFT-FEM and DFT-MLIP-FEM coupling, and high-throughput discovery
 - preset manifests for structure acquisition and project bootstrapping
-- helper scripts for preflight checks, structure intake, job rendering, queue execution, run monitoring, and result summarization
+- helper scripts for cross-stack preflight, multiscale scaffolding, manifest validation, MLIP dataset auditing, ASE surrogate inference/relaxation, trajectory diagnostics, research-spine maintenance, structure intake, VASP job rendering, queue execution, monitoring, and summarization
 
 ## Supported Runtimes
 
@@ -205,12 +238,13 @@ The repository keeps these adapter directories visible so they can be uploaded t
 
 ## Clouds_Coder Compatibility
 
-This package is structured to align with the actual `Clouds_Coder.py` skill loader and is tuned specifically for the loading and discovery behavior used by [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder):
+This package keeps the source `SKILL.md` standard and uses a Clouds-only sidecar overlay for compact loading:
 
-- YAML frontmatter includes `name`, `description`, `aliases`, `triggers`, `keywords`, `runtime_compat`
-- `clouds_coder.preferred_tools`, `entrypoints`, and `runtime_contract` are present
+- portable source frontmatter contains only `name` and `description`
+- `agents/clouds-coder.json` carries aliases, triggers, entrypoints, attachments, preferred tools, and the runtime contract
+- `scripts/sync_skill_to_platforms.py --targets clouds --mode copy` applies that overlay only to the generated Clouds target
 - entrypoint resources are separated from the full body so the runtime can load them on demand
-- the skill body is intentionally long enough to trigger Clouds compact-mode loading
+- the compatibility checker validates standard source packaging and the rendered Clouds copy; it also tests runtime compact mode when `Clouds_Coder` is importable
 
 ## Cross-Platform Portability
 
@@ -236,6 +270,7 @@ In particular:
 - no VASP source code or binary is included
 - no `POTCAR` or PAW dataset is included
 - no official VASP manual mirror, portal dump, or copied wiki archive is included
+- no pretrained MLIP checkpoint, restricted training dataset, proprietary FEM model, or solver license file is included
 - helper scripts assume the user already has a separately licensed local installation where required
 
 See the full legal and boundary document here:

@@ -25,13 +25,13 @@ GitHub-friendly repository adapters:
 
 Those repository folders are intentionally visible for GitHub upload and browsing. Actual platform installs still go to runtime-native paths such as `.claude/`, `.opencode/`, `~/.codex/`, and `~/.agents/`.
 
-`Clouds_Coder.py` supports three compatible ways to see this bundle.
+`Clouds_Coder.py` can see the portable source directly, while the generated mirror is the optimized compact-loading path.
 
 ## Mode 1: Direct Skills Root
 
 Use `DFT_Skills/skills` as the active `skills_root`.
 
-This is the cleanest mode if the repository itself is dedicated to this skill pack.
+This is the cleanest portable mode if the repository itself is dedicated to this skill pack. It reads the standard source `SKILL.md`; use Mode 3 when Clouds-specific aliases, entrypoints, and compact metadata are required.
 
 ## Mode 2: External Library Auto-Discovery
 
@@ -65,16 +65,17 @@ This creates:
 
 - `skills/generated/dft-workflow-orchestrator/`
 
-That path is the most predictable option when the main workspace already uses a `skills/` tree.
+That path is the most predictable and recommended Clouds option when the main workspace already uses a `skills/` tree. The sync command must use copy mode because it applies the platform overlay only to the generated target.
 
 ## On-Demand Loading Alignment
 
-The skill is authored to match the `Clouds_Coder.py` loading model:
+The skill separates portable and Clouds-specific metadata:
 
-- YAML frontmatter contains `name`, `description`, `aliases`, `triggers`, `keywords`, `runtime_compat`
-- `clouds_coder.preferred_tools`, `entrypoints`, and `runtime_contract` are present
+- source `SKILL.md` frontmatter contains only standard `name` and `description`
+- `agents/clouds-coder.json` contains aliases, triggers, attachments, entrypoints, preferred tools, and the runtime contract
+- `sync_skill_to_platforms.py --targets clouds --mode copy` renders that overlay into the generated Clouds copy
 - reusable resources are exposed through `attachments`
-- the body is long enough to trigger compact-mode loading in Clouds, so the runtime can show the contract plus resource manifest first and defer deeper reads
+- the rendered copy can enter compact mode so the runtime shows the contract and resource manifest before deeper reads
 
 ## Verification
 
@@ -86,11 +87,11 @@ python3 DFT_Skills/skills/dft-workflow-orchestrator/scripts/verify_clouds_compat
 
 The verifier checks:
 
-- direct `skills_root` loading
-- external-library auto-discovery
-- project-local `skills/generated/` mirroring
+- standard source frontmatter
+- the Clouds sidecar overlay and all entrypoints
+- rendered project-local copy generation
 - entrypoint presence
-- Clouds compact-mode loading behavior
+- Clouds compact-mode loading behavior when `Clouds_Coder` is importable
 
 ## Boundary Rules
 

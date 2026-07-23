@@ -1,8 +1,8 @@
 {
   "name": "dft-skills",
-  "displayName": "DFT Skills",
-  "description": "Cross-platform DFT and VASP workflow skills with project scaffolding, job rendering, and run summarization.",
-  "version": "0.2.0",
+  "displayName": "Materials Simulation Skills",
+  "description": "Scale-aware DFT, AIMD, MLIP/MLMD, FEM, and research-state workflow orchestration.",
+  "version": "0.3.0",
   "author": {
     "name": "Local Build"
   },
@@ -14,6 +14,11 @@
     "materials",
     "first-principles",
     "ab-initio",
+    "aimd",
+    "mlip",
+    "molecular-dynamics",
+    "fem",
+    "multiscale",
     "computational-physics",
     "workflow"
   ],
