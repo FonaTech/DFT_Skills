@@ -42,6 +42,12 @@ Each case file is expected to give:
 | COMSOL coupling | device or reactor scale constitutive parameters | property handoff table and validity window | `14-comsol-coupling-and-property-handoff.md` |
 | Piezoelectric coupling | strain-electric response, electromechanical tensors | piezo tensor and strain-response packet | `15-piezoelectric-strain-coupling.md` |
 | Thermal transport | phonons, dynamical stability, lattice thermal transport | phonon and force-constant packet | `16-phonon-and-thermal-transport.md` |
+| Pretrained MLIP screening | rapid surrogate inference, relaxation, and candidate ranking | model card, target-domain benchmark, DFT confirmation | `17-pretrained-mlip-surrogate-screening.md` |
+| MLIP active learning | DFT labeling loop, extrapolation detection, production MLMD | dataset ledger, frozen checkpoint, challenge report | `18-mlip-active-learning-and-production-md.md` |
+| DFT-FEM electro-chemo-mechanics | atomistic properties feeding coupled continuum fields | equation sheet, handoff register, verified FEM response | `19-dft-fem-electro-chemo-mechanical-coupling.md` |
+| DFT-MLIP-FEM hierarchy | DFT references, MLMD ensembles, constitutive reduction, device response | end-to-end DAG, uncertainty, feedback ledger | `20-dft-mlip-fem-hierarchical-multiscale.md` |
+| Free energy and phase behavior | finite-temperature phase stability, disorder, transitions | free-energy decomposition and phase boundary | `21-finite-temperature-free-energy-and-phase-behavior.md` |
+| High-throughput screening | multifidelity candidate funnel and DFT confirmation | candidate ledger, ranking validation, robust shortlist | `22-high-throughput-multifidelity-materials-screening.md` |
 
 ## Selection Rules
 
@@ -49,3 +55,6 @@ Each case file is expected to give:
 - If the user asks for several properties at once, separate the bootstrap case from the downstream cases instead of merging every target into one launch packet.
 - If the user asks for continuum, reactor, or long-time behavior, first finish the DFT packet, then open the corresponding handoff or scale-bridging case.
 - If one case reveals that the current DFT level is insufficient, record the limit explicitly and stop pretending the case file alone resolves the scientific question.
+- If the decisive observable is resolved by one case, stop there and record deferred scales in the research spine.
+- If several cases are plausible, ask for route, depth, deliverable, and validation preferences before opening a coupled packet.
+- Keep branch purpose, stop criteria, and artifact lineage in `workflow/branch_register.csv` and `workflow/data_lineage.csv`.

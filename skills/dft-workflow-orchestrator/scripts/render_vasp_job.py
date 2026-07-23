@@ -5,9 +5,10 @@ import argparse
 import json
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from pymatgen.core import Structure
-from pymatgen.io.vasp import Poscar
+if TYPE_CHECKING:
+    from pymatgen.core import Structure
 
 
 PRESETS = {
@@ -55,6 +56,8 @@ def unique_species_order(structure: Structure) -> list[str]:
 
 
 def reorder_structure(structure: Structure, species_order: list[str]) -> Structure:
+    from pymatgen.core import Structure
+
     indexed_sites = list(enumerate(structure))
     indexed_sites.sort(
         key=lambda item: (
@@ -249,6 +252,12 @@ def main() -> int:
     parser.add_argument("--skip-potcar", action="store_true", help="Skip POTCAR generation.")
     parser.add_argument("--extra-incar", action="append", default=[], help="Append raw INCAR lines like KEY = VALUE.")
     args = parser.parse_args()
+
+    try:
+        from pymatgen.core import Structure
+        from pymatgen.io.vasp import Poscar
+    except ImportError as exc:
+        raise RuntimeError("pymatgen is required to render a VASP job from a structure file.") from exc
 
     structure = Structure.from_file(args.structure.expanduser().resolve())
     species_order = args.species_order or unique_species_order(structure)

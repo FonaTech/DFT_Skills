@@ -1,0 +1,32 @@
+{
+  "name": "dft-fem-property-basis",
+  "description": "Reference-cell intake for DFT elastic, dielectric, piezoelectric, thermal, or kinetic property extraction before FEM coupling.",
+  "workflow_tags": [
+    "dft",
+    "fem",
+    "constitutive",
+    "tensor",
+    "property-handoff"
+  ],
+  "required_user_inputs": [
+    "basis_source",
+    "basis_value"
+  ],
+  "notes": [
+    "Declare crystal and continuum coordinate bases before extracting tensors.",
+    "Separate direct properties from fitted or homogenized closures and retain state variables.",
+    "Use additional cells or state points when the continuum model requires composition, temperature, or defect dependence."
+  ],
+  "entries": [
+    {
+      "label": "fem_property_bulk",
+      "source": "{{basis_source}}",
+      "value": "{{basis_value}}",
+      "filename": "fem_property_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_fem_property_bulk"
+    }
+  ],
+  "derived": [],
+  "slabs": []
+}

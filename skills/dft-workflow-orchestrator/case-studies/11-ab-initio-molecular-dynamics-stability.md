@@ -6,6 +6,8 @@ Use this case when the key uncertainty is finite-temperature stability, short-ti
 
 Do not use this case by itself to make long-time kinetics or macroscopic lifetime claims.
 
+Read `references/aimd-workflows.md` for ensemble design, replica logic, statistical sufficiency, enhanced sampling, and MLIP handoff gates.
+
 ## Questions This Workflow Must Answer
 
 - Does the structure remain qualitatively intact over the accessible AIMD timescale?

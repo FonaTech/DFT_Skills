@@ -1,0 +1,44 @@
+{
+  "name": "mlip-active-learning-seed",
+  "description": "Bulk and supercell intake for DFT labels, uncertainty-driven MLIP active learning, and guarded MLMD.",
+  "workflow_tags": [
+    "mlip",
+    "active-learning",
+    "training",
+    "mlmd",
+    "supercell"
+  ],
+  "required_user_inputs": [
+    "seed_source",
+    "seed_value"
+  ],
+  "notes": [
+    "Treat this as a seed only; add strained, defect, surface, interface, reaction, and thermal configurations required by deployment.",
+    "Keep parent and trajectory identifiers when adding active-learning batches.",
+    "Do not use the generated supercell as evidence that the MLIP covers the target domain."
+  ],
+  "entries": [
+    {
+      "label": "mlip_seed_bulk",
+      "source": "{{seed_source}}",
+      "value": "{{seed_value}}",
+      "filename": "mlip_seed_bulk.cif",
+      "normalize": "conventional",
+      "poscar": "POSCAR_mlip_seed_bulk"
+    }
+  ],
+  "derived": [
+    {
+      "label": "mlip_seed_supercell",
+      "source_label": "mlip_seed_bulk",
+      "operation": "supercell",
+      "scaling_matrix": [
+        2,
+        2,
+        2
+      ],
+      "poscar": "POSCAR_mlip_seed_supercell"
+    }
+  ],
+  "slabs": []
+}

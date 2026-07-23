@@ -1,393 +1,217 @@
 ---
 name: dft-workflow-orchestrator
-aliases:
-  - dft
-  - vasp
-  - ab-initio
-  - first-principles
-  - materials-dft
-keywords:
-  - dft
-  - vasp
-  - density functional theory
-  - first principles
-  - ab initio
-  - materials simulation
-  - computational physics
-  - cif
-  - poscar
-  - adsorption
-  - defect
-  - migration barrier
-  - band structure
-  - optical dielectric
-  - aimd
-  - phonon
-  - lammps coupling
-  - comsol coupling
-runtime_compat:
-  - clouds_coder.py
-  - codex
-  - claude-code
-  - opencode
-triggers:
-  - DFT
-  - VASP
-  - density functional theory
-  - first-principles
-  - ab initio
-  - CIF
-  - POSCAR
-  - slab
-  - interface
-  - adsorption
-  - defect
-  - migration
-  - NEB
-  - DOS
-  - PDOS
-  - Bader
-  - band structure
-  - optical property
-  - dielectric
-  - ferroelectric
-  - polarization
-  - AIMD
-  - phonon
-  - thermal transport
-  - piezoelectric
-  - LAMMPS
-  - COMSOL
-  - 计算物理
-  - 第一性原理
-  - 密度泛函
-  - 结构下载
-  - 掺氢
-  - 过渡态
-  - 能带
-  - 光学
-  - 介电
-  - 缺陷
-  - 迁移势垒
-  - 分子动力学
-  - 声子
-  - 热输运
-  - 压电
 description: >
-  Portable DFT and VASP workflow skill for literature-grounded materials simulation.
-  Use this skill whenever the user asks about DFT, VASP, density functional theory,
-  first-principles or ab initio modeling, 第一性原理, structure download, CIF/POSCAR
-  generation, DFT+U, magnetic order, slabs, interfaces, adsorption, defects, NEB,
-  DOS, PDOS, Bader analysis, optical properties, or wants to convert a paper claim
-  or experimental mechanism into a reproducible computational workflow across
-  Clouds_Coder, Codex, Claude Code, or OpenCode.
-license: MIT
-compatibility: >
-  Agent Skills compatible. Best with shell and file tools. Optional acceleration:
-  local VASP plus pseudopotentials, pymatgen, ase, mp_api, fitz, and RAG retrieval
-  on platforms that expose it.
-metadata:
-  category: materials-simulation
-  domain: materials-simulation
-  engine: vasp
-  workflow: literature-to-runs
-  portability: cross-platform
-  keywords:
-    - density functional theory
-    - vasp workflow
-    - structure acquisition
-    - adsorption and catalysis
-    - defect chemistry
-    - migration barrier
-    - band structure
-    - optical dielectric response
-    - aimd monitoring
-    - phonon thermal transport
-attachments:
-  - references/*.md
-  - case-studies/*.md
-  - presets/*.md
-  - presets/*.json
-  - scripts/*.py
-  - scripts/*.sh
-  - agents/*.yaml
-clouds_coder:
-  aliases:
-    - density-functional-theory
-    - first-principles-workflow
-    - computational-physics-dft
-  triggers:
-    - catalytic adsorption
-    - electrocatalysis
-    - optical response
-    - defect chemistry
-    - trap state
-    - ab initio molecular dynamics
-    - plasma reaction
-    - lammps handoff
-    - comsol handoff
-  preferred_tools:
-    - query_knowledge_library
-    - load_skill
-    - bash
-    - read_file
-    - write_file
-    - TodoWrite
-  entrypoints:
-    - references/literature-to-dft-outline.md
-    - references/knowledge-grounding-protocol.md
-    - references/theory-model-selection.md
-    - references/dft-task-router.md
-    - references/live-run-monitoring.md
-    - references/vasp-methodology.md
-    - references/project-layout.md
-    - references/platform-interop.md
-    - case-studies/INDEX.md
-    - presets/INDEX.md
-    - scripts/preflight_dft_env.py
-    - scripts/fetch_structures.py
-    - scripts/scaffold_dft_project.py
-    - scripts/render_vasp_job.py
-    - scripts/monitor_vasp_runs.py
-    - scripts/summarize_vasp_runs.py
-    - scripts/run_one_vasp_job.sh
-    - scripts/run_vasp_queue.sh
-    - scripts/clone_job_with_d3.sh
-    - scripts/sync_skill_to_platforms.py
-  runtime_contract: |
-    1. Probe the runtime and workspace before promising calculations.
-    2. On Clouds_Coder.py, ground theory in this exact order: uploaded or local source files, local RAG, online search, then model knowledge as the final fallback.
-    3. On platforms other than Clouds_Coder.py, ground theory in this exact order: uploaded or local source files, online search if available, then model knowledge as the fallback.
-    4. Stop the collection chain as soon as the current information tier is sufficient to justify model selection and experiment routing.
-    5. Convert the user's request or paper into explicit claims, controls, observables, and method limits.
-    6. Acquire or normalize structures before generating jobs, and always write provenance.
-    7. Keep the planning authority inside workflow/*.md and workflow/*.csv before launch.
-    8. For correlated, magnetic, or strongly method-sensitive systems, scan at least one sensitivity axis instead of assuming plain GGA is enough.
-    9. When jobs run in the background, keep a live monitoring loop active via queue logs, runtime files, and analysis/live_status.* outputs.
-    10. Never fabricate POTCAR, API keys, Materials Project access, or convergence evidence.
-entrypoints:
-  - references/literature-to-dft-outline.md
-  - references/knowledge-grounding-protocol.md
-  - references/theory-model-selection.md
-  - references/dft-task-router.md
-  - references/live-run-monitoring.md
-  - references/vasp-methodology.md
-  - references/project-layout.md
-  - references/platform-interop.md
-  - case-studies/INDEX.md
-  - presets/INDEX.md
-  - scripts/preflight_dft_env.py
-  - scripts/fetch_structures.py
-  - scripts/scaffold_dft_project.py
-  - scripts/render_vasp_job.py
-  - scripts/monitor_vasp_runs.py
-  - scripts/summarize_vasp_runs.py
-  - scripts/run_one_vasp_job.sh
-  - scripts/run_vasp_queue.sh
-  - scripts/clone_job_with_d3.sh
-  - scripts/sync_skill_to_platforms.py
+  Design, scaffold, execute, monitor, validate, and report reproducible atomistic-to-continuum materials simulations. Use for DFT or first-principles work with VASP, Quantum ESPRESSO, CP2K, GPAW, or related engines; ab initio molecular dynamics and enhanced sampling; machine-learning interatomic potentials or ML force fields including pretrained inference, fine-tuning, active learning, and production MD; finite-element or multiphysics studies with COMSOL, FEniCSx, MOOSE, Abaqus, or CalculiX; and coupled DFT-AIMD-MLIP-MD-FEM experiments. Also use for structures, adsorption, defects, NEB, electronic structure, optics, phonons, transport, mechanics, thermodynamics, interfaces, catalysis, uncertainty, provenance, literature-to-workflow planning, 第一性原理, 密度泛函, 从头算分子动力学, 机器学习势, 分子动力学, 有限元, 多物理场, 多尺度材料模拟, and 研究主线管理.
 ---
 
-# DFT Workflow Orchestrator
+# Multiscale Materials Workflow Orchestrator
 
-Turn a scientific question into a reproducible DFT workspace. Do not stop at vague advice if the environment can support actual scaffolding.
+Turn a scientific question into a reproducible, scale-aware simulation project. Preserve the existing VASP execution path while selecting DFT, AIMD, MLIP, MD, FEM, or a validated combination according to the observable and scales actually required.
 
-## Use This Skill For
+## Operating Rules
 
-- literature-to-calculation planning
-- VASP project bootstrapping
-- structure retrieval or normalization
-- correlated oxides, magnetic materials, and DFT+U decisions
-- slabs, interfaces, adsorption, defects, migration, DOS, optics, and charge analysis
-- background-run monitoring, convergence triage, and queue-state interpretation
-- project packets that need explicit claims, controls, and method boundaries
+1. Start from the scientific decision and decisive observable, not from a favorite code.
+2. Classify whether the claim is single-scale or genuinely cross-scale before adding a second method. Stop at the smallest scale that resolves the decision.
+3. Preflight data, executables, Python packages, accelerators, licenses, and compute limits before promising execution.
+4. Separate evidence layers: electronic-structure reference, atomistic sampling, surrogate prediction, homogenized constitutive law, continuum response, and experimental calibration.
+5. Give every stage explicit inputs, outputs, controls, validation gates, units, provenance, and a validity domain.
+6. Use sequential coupling by default. Use concurrent or adaptive coupling only when a supported implementation and a justified interface algorithm exist.
+7. Treat pretrained MLIPs as hypotheses until validated on the target chemistry, phase, state variables, and observables.
+8. Propagate uncertainty across handoffs; do not report only the final solver residual.
+9. Never fabricate structures, pseudopotentials, checkpoints, licenses, API keys, convergence, model accuracy, or completed calculations.
+10. Distinguish planning, scaffolding, dry-run, submitted, running, converged, validated, and interpreted states.
+11. Keep generated projects and calculation outputs outside the skill directory.
 
-## Do Not Use This Skill For
+## Intake
 
-- chemistry trivia or one-line definitions
-- pretending static DFT proves finite-temperature kinetics or growth dynamics
-- fabricating `POTCAR`, API keys, Materials Project access, or convergence evidence
+Resolve or explicitly mark assumptions for:
 
-## Runtime Contract
+- scientific claim, decision, and primary observable
+- composition, phase, defects, interfaces, charge, spin, environment, and operating window
+- spatial and temporal scales that must be resolved
+- required accuracy, uncertainty tolerance, budget, deadline, and available hardware
+- available structures, trajectories, labels, checkpoints, experimental data, and solver licenses
+- boundary conditions, loading paths, ensembles, rare events, and failure modes
+- expected deliverable: plan, inputs, executable run, analysis, model, handoff table, or coupled prediction
+- scale decision: smallest sufficient scale, scales deliberately deferred, and the observation that would force escalation
 
-Always follow this order:
+Ask only for missing choices that would materially change the experiment. For reversible details, proceed with labeled assumptions and expose them in `workflow/assumptions.md`.
 
-1. Preflight the environment before promising calculations.
-2. Build a knowledge packet and theory packet before detailed experiment routing.
-3. On Clouds_Coder.py, ground theory in this exact order: uploaded or local source files, local RAG, online search, then model knowledge as the final fallback.
-4. On platforms other than Clouds_Coder.py, use uploaded or local source files first, then online search if available, then model knowledge as the fallback.
-5. Stop the collection chain as soon as the current information tier is sufficient to justify theory selection and experiment routing.
-6. Translate the user request or paper into a claim matrix.
-7. Acquire or normalize structures before job creation.
-8. Write the workflow packet before launching runs.
-9. Materialize only defensible jobs.
-10. Keep a front-end monitoring loop active while jobs run in the background.
-11. Summarize outcomes with explicit method limits.
-12. Keep all generated calculation outputs in a user project root, not inside the skill directory itself.
+### Complex-Task Design Brief
 
-## Clouds_Coder Native Loading
+Before committing an expensive or multi-branch workflow, ask a short design brief when more than one scale or method is plausible, the requested depth is unclear, the output drives a consequential decision, or the route requires substantial compute, licensing, data generation, or model training. Confirm:
 
-This skill is intentionally structured for `Clouds_Coder.py` lazy loading.
+1. preferred technical route and acceptable alternatives (DFT-only, AIMD, MLIP/MLMD, FEM, or staged coupling)
+2. target depth: design, smoke test, pilot, production, or decision-grade
+3. primary goal and expected deliverables
+4. accuracy, uncertainty, reproducibility, and independent-validation standard
+5. available structures, labels, checkpoints, solvers, hardware, licenses, time, and budget
+6. forbidden assumptions and what would count as a useful partial result
 
-When `load_skill('dft-workflow-orchestrator')` is called in a Clouds session, the runtime should treat this file as a gateway and the entrypoints as the authoritative low-cost resource map.
-
-Use this read pattern instead of bulk-reading the whole bundle:
-
-1. for theory intake and source hierarchy, read `references/literature-to-dft-outline.md` and `references/knowledge-grounding-protocol.md`
-2. for workflow routing, read `references/dft-task-router.md` and then only one case from `case-studies/`
-3. for structure intake, read `presets/INDEX.md` and `scripts/fetch_structures.py`
-4. for method settings, read `references/vasp-methodology.md`
-5. for active jobs, read `references/live-run-monitoring.md` and `scripts/monitor_vasp_runs.py`
-6. only open the full `case-studies/` or `presets/` tree when the current task truly expands into that branch
-
-Clouds-specific discovery and install routes that stay aligned with the loader:
-
-- direct skills-root mode: point the active `skills_root` at `DFT_Skills/skills`
-- external-library mode: keep `DFT_Skills` adjacent to the active `skills/` directory so `Clouds_Coder.py` can auto-discover `skills/*/SKILL.md`
-- project-local native mode: mirror the skill into `skills/generated/dft-workflow-orchestrator/` with `scripts/sync_skill_to_platforms.py --targets clouds`
-
-Boundary rules for native Clouds use:
-
-- keep the skill bundle read-only during normal execution
-- keep generated workflow packets, structures, runs, logs, and analysis outside the skill bundle
-- prefer `query_knowledge_library` only after uploaded or local materials have been checked
-- treat `case-studies/INDEX.md`, `presets/INDEX.md`, and the runtime contract as the first on-demand control plane, not as files to bypass
+Keep questions concise and decision-oriented. If a noncritical detail is unanswered, choose a reversible default and record it. Do not block a routine single-scale scaffold on this brief.
 
 ## Phase 0: Preflight
 
-From the skill root, run:
+Run the cross-stack probe:
+
+```bash
+python3 scripts/preflight_multiscale_env.py --workspace ../your-project --pretty
+```
+
+For a VASP-only request, retain the focused probe:
 
 ```bash
 python3 scripts/preflight_dft_env.py --workspace ../your-project --pretty
 ```
 
-Check:
+Read [engine-capability-matrix.md](references/engine-capability-matrix.md) before selecting an engine or MLIP family. A detected package is not proof that a model, license, pseudopotential set, GPU build, or compatible checkpoint is available.
 
-- `vasp_std`, `vasp_gam`, `mpirun`, `pdftotext`, and Python availability
-- pseudopotential roots and Materials Project API keys
-- Python packages: `pymatgen`, `ase`, `mp_api`, `numpy`, `scipy`, `fitz`
-- whether literature PDFs and local structure files already exist
+Downgrade honestly:
 
-If prerequisites are missing, downgrade to planning or partial scaffolding instead of bluffing.
+- no executable or license: produce a validated plan and scaffold
+- no reference data or compatible MLIP: design data acquisition and validation, not production MLMD
+- no FEM backend: produce a unit-checked handoff and solver-neutral weak-form specification
+- inadequate compute: reduce scope without silently weakening the scientific claim
 
-## Phase 1: Knowledge Grounding and Theory Intake
+## Phase 1: Ground The Scientific Model
 
-Use [references/literature-to-dft-outline.md](references/literature-to-dft-outline.md),
-[references/knowledge-grounding-protocol.md](references/knowledge-grounding-protocol.md), and
-[references/theory-model-selection.md](references/theory-model-selection.md).
+Read [literature-to-dft-outline.md](references/literature-to-dft-outline.md), [knowledge-grounding-protocol.md](references/knowledge-grounding-protocol.md), and [theory-model-selection.md](references/theory-model-selection.md).
 
-Build three layers:
+Use sources in this order:
 
-1. User objective: target system, observable, and required rigor.
-2. Literature claim set: what the paper actually claims, what is merely interpretation, and what controls exist.
-3. Source-grounding stack: select sources in platform order and stop escalating as soon as the current tier is sufficient.
+1. user-provided and local project files
+2. local retrieval or RAG when available
+3. authoritative online literature and official software documentation when available
+4. model knowledge, clearly marked as an unverified prior
 
-Platform-specific grounding rule:
+Stop collecting when the evidence is sufficient to choose the model ladder, controls, and pass criteria. Record contradictions and negative evidence rather than forcing consensus.
 
-- On `Clouds_Coder.py`, use this exact order: uploaded or local project files, then local `query_knowledge_library` retrieval, then online or web literature search, then model knowledge as the final fallback.
-- On other platforms, use uploaded or local project files first, then online or web retrieval if available, then model knowledge as the fallback.
-- If the current source tier already resolves the theory basis, method choice, and control design, do not continue to the next tier just to accumulate citations.
+## Phase 2: Route The Experiment
 
-When the theory model is unclear or obscure, explicitly write:
+Read [research-mode-router.md](references/research-mode-router.md). Then load only the branch references required by the route:
 
-- candidate mechanism families
-- candidate theoretical models
-- why the current DFT level is sufficient or insufficient
-- what higher-level method would be needed if the present result is only indirect support
+| Need | Primary route | Read |
+|---|---|---|
+| ground-state structure, energy, charge, spectra, barriers | DFT | [dft-task-router.md](references/dft-task-router.md), [vasp-methodology.md](references/vasp-methodology.md) |
+| finite-temperature atomistic behavior at first-principles accuracy | AIMD | [aimd-workflows.md](references/aimd-workflows.md) |
+| larger or longer atomistic sampling | MLIP or classical MD | [mlip-workflows.md](references/mlip-workflows.md) |
+| device, component, field, fracture, transport, or reactor response | FEM or multiphysics | [fem-multiscale-coupling.md](references/fem-multiscale-coupling.md) |
+| two or more linked scales | staged multiscale DAG | all relevant branch references plus [multiscale-validation.md](references/multiscale-validation.md) |
 
-Separate every statement into:
+Open [case-studies/INDEX.md](case-studies/INDEX.md) and select the smallest case set that covers the decisive observable. Do not combine branches merely because they can produce additional plots.
 
-- directly supported by source or input files
-- DFT-testable hypothesis
-- non-DFT claim that must remain qualified
+### Single-Scale Stop Rule
 
-## Phase 2: Claim Routing
+Write a scale decision before opening a second branch:
 
-Use [references/dft-task-router.md](references/dft-task-router.md).
+- **electronic or local atomistic claim:** stop after the DFT gate when the requested observable is a ground-state or local response quantity
+- **finite-temperature atomistic claim:** add AIMD only when static DFT cannot test the relevant fluctuation or rearrangement
+- **large-cell or long-time atomistic claim:** add MLIP/MLMD only when validated sampling is the limiting factor
+- **device or field claim:** add FEM only when geometry, boundary conditions, spatial fields, or component-scale response change the decision
+- **cross-scale claim:** add a handoff only when an upstream state-dependent output is an input to a downstream equation and each layer has an independent acceptance test
 
-If the request matches a standard engineering workflow, open [case-studies/INDEX.md](case-studies/INDEX.md) and load only the single most relevant case file instead of reading the full case library.
+Record rejected or deferred scales in `workflow/research_contract.md` and `experiment_manifest.json`. A workflow that ends at DFT, AIMD, MLIP, or FEM is complete when its own gate answers the claim.
 
-Minimum required workflow files:
+## Phase 3: Create The Planning Authority
 
-- `workflow/request_summary.md`
-- `workflow/knowledge_sources.md`
-- `workflow/theory_packet.md`
-- `workflow/claim_matrix.md`
-- `workflow/experiment_matrix.csv`
-- `workflow/method_guardrails.md`
-
-Every claim must map to:
-
-- a model system
-- a job family
-- a primary observable
-- a control or reference
-- a method risk
-- a pass condition
-
-## Phase 3: Structure Acquisition
-
-Use the bundled structure script:
-
-```bash
-python3 scripts/fetch_structures.py --help
-```
-
-List the bundled engineering presets with:
-
-```bash
-python3 scripts/fetch_structures.py --list-presets
-```
-
-Preset templates live in [presets/INDEX.md](presets/INDEX.md). If a preset still contains unresolved placeholders, the script writes a project-local template into `workflow/structure_manifest.<preset>.json` and exits so the user can fill the remaining fields before any structure download happens.
-
-Preferred order:
-
-1. user-provided `CIF`, `POSCAR`, `CONTCAR`, or curated structure folder
-2. Materials Project when API access exists
-3. COD or direct public URLs
-4. documented reconstruction from literature cell data
-
-Always record provenance in `structures/provenance.json`.
-
-## Phase 4: Method Selection
-
-Use [references/vasp-methodology.md](references/vasp-methodology.md).
-
-Decide explicitly:
-
-- functional
-- whether `+U` is required
-- magnetic order and spin treatment
-- slab thickness, vacuum, and dipole correction when relevant
-- dispersion treatment for weak binding
-- convergence targets for `ENCUT`, k-mesh, and force criteria
-
-Never summarize this phase as "standard VASP settings".
-
-## Phase 5: Project Scaffolding
-
-Create the reproducible project packet:
+For routine DFT-only projects, preserve the existing lightweight scaffold:
 
 ```bash
 python3 scripts/scaffold_dft_project.py \
   --project-root ../your-project \
   --system-name "Material System" \
-  --claim "Claim one" \
+  --claim "Scientific claim" \
   --task bulk-relax \
   --task dos
 ```
 
-The scaffold creates the contract described in [references/project-layout.md](references/project-layout.md) and copies execution helpers into the project `scripts/` directory.
+For a complex or branching DFT-only project, use the full research control plane with `--stage dft` only. This does not create a multiscale chain or any handoff; it adds the design brief, research spine, branch register, lineage, and next-action queue.
 
-Boundary rule:
+For AIMD, MLIP, FEM, coupled work, or complex single-scale work, create the full packet:
 
-- use the skill directory as read-only knowledge and tooling
-- use the project root as the only place for generated workflow files, structures, runs, logs, and analysis outputs
+```bash
+python3 scripts/scaffold_multiscale_project.py \
+  --project-root ../your-project \
+  --system-name "Material System" \
+  --claim "Scientific claim" \
+  --stage dft \
+  --stage mlip \
+  --stage md \
+  --stage fem
+```
 
-## Phase 6: Job Materialization
+Read [experiment-manifest-contract.md](references/experiment-manifest-contract.md). The project-level authority is:
 
-Render job folders with:
+- `workflow/research_contract.md`
+- `workflow/decision_brief.md`
+- `workflow/research_spine.md`
+- `workflow/branch_register.csv`
+- `workflow/data_lineage.csv`
+- `workflow/next_action_queue.csv`
+- `workflow/decision_log.md`
+- `workflow/assumptions.md`
+- `workflow/knowledge_sources.md`
+- `workflow/claim_matrix.csv`
+- `workflow/experiment_manifest.json`
+- `workflow/handoff_register.csv`
+- `workflow/validation_plan.md`
+- `workflow/risk_register.md`
+
+Validate before materializing expensive work:
+
+```bash
+python3 scripts/validate_experiment_manifest.py \
+  --manifest ../your-project/workflow/experiment_manifest.json \
+  --handoff-register ../your-project/workflow/handoff_register.csv
+```
+
+Use `--strict` only after placeholders are resolved and the workflow is launch-ready.
+
+Keep the research spine current while work branches: after each run, update the current gate, claim verdict, branch status, and one prioritized next action. Refresh it with:
+
+```bash
+python3 scripts/maintain_research_spine.py \
+  --project-root ../your-project \
+  --pretty
+```
+
+Do not launch a branch that has no claim, purpose, kill criterion, or expected information gain. Close, merge, or explicitly defer branches before opening more.
+
+## Phase 4: Acquire Structures And Data
+
+Use this priority:
+
+1. user-provided, curated structures and datasets
+2. versioned institutional or public databases with stable identifiers
+3. documented reconstruction from literature
+4. generated configurations with a recorded algorithm, seed, parent, and constraints
+
+For structure presets:
+
+```bash
+python3 scripts/fetch_structures.py --list-presets
+python3 scripts/fetch_structures.py \
+  --project-root ../your-project \
+  --preset bulk-property-bootstrap
+```
+
+Write provenance for structures, labels, trajectories, train/validation/test splits, pretrained weights, descriptor statistics, meshes, constitutive fits, and experimental calibration data. Prevent leakage by grouping related frames, trajectories, compositions, or parent structures before splitting.
+
+## DFT Lane
+
+Retain the established VASP path and quality gates:
+
+1. justify the functional, pseudopotentials, spin, charge, `+U`, dispersion, relativistic treatment, cell, and reference states
+2. converge basis, k-points, cell or slab dimensions, force criteria, and method-sensitive axes
+3. acquire and normalize structures with provenance
+4. render VASP jobs only after method choices are documented
+5. require real `INCAR`, `KPOINTS`, `POSCAR`, and licensed local `POTCAR` before launch
+6. run through `run_one_vasp_job.sh` or `run_vasp_queue.sh`
+7. monitor through `monitor_vasp_runs.py`
+8. summarize through `summarize_vasp_runs.py`
+9. map every result back to a claim, control, sensitivity axis, and method limit
+
+Example materialization:
 
 ```bash
 python3 scripts/render_vasp_job.py \
@@ -401,114 +225,142 @@ python3 scripts/render_vasp_job.py \
   --afm-element Ni
 ```
 
-Use only after the structure and method choices are already justified.
+Do not translate settings mechanically between VASP, Quantum ESPRESSO, CP2K, GPAW, CASTEP, ABINIT, or other engines. Match physical approximations, pseudopotential or basis families, reference energies, smearing, stress conventions, and convergence criteria.
 
-Do not start a run until the job directory contains real:
+## AIMD Lane
 
-- `INCAR`
-- `KPOINTS`
-- `POSCAR`
-- `POTCAR`
+Follow [aimd-workflows.md](references/aimd-workflows.md):
 
-If `POTCAR` cannot be resolved from the local pseudopotential root, stop and report it.
+1. converge the static electronic setup and starting structure
+2. justify the ensemble, thermostat or barostat, time step, cell size, temperature or pressure ladder, equilibration, production length, and replicas
+3. monitor conserved quantities, drift, SCF failures, cell pathologies, and the claim-specific structural observables
+4. separate equilibration from production and estimate autocorrelation or effective sample size
+5. use enhanced sampling only with a declared collective variable, reweighting plan, and independent validation
+6. quench or recompute representative and event snapshots when mechanistic interpretation matters
 
-## Phase 7: Execution
-
-Use the bundled project-safe runners:
-
-- `run_one_vasp_job.sh`
-- `run_vasp_queue.sh`
-- `clone_job_with_d3.sh`
-
-Typical examples:
+Generate reproducible trajectory diagnostics instead of relying on visual inspection:
 
 ```bash
-cd your-project
-zsh scripts/run_one_vasp_job.sh runs/00_bulk/example_relax 8
-```
-
-```bash
-cd your-project
-zsh scripts/run_vasp_queue.sh joblists/bootstrap.txt 8
-```
-
-If the front-end must stay interactive while jobs run, launch the queue in the background and keep monitoring active:
-
-```bash
-cd your-project
-nohup zsh scripts/run_vasp_queue.sh joblists/bootstrap.txt 8 \
-  > logs/bootstrap/launcher.out 2>&1 &
-```
-
-## Phase 8: Live Monitoring and Course Correction
-
-Use [references/live-run-monitoring.md](references/live-run-monitoring.md).
-
-While jobs are active, run:
-
-```bash
-cd your-project
-python3 scripts/monitor_vasp_runs.py \
-  --project-root . \
-  --interval-seconds 120 \
-  --iterations 0 \
+python3 scripts/analyze_atomistic_trajectory.py \
+  --input data/trajectories/production.extxyz \
+  --timestep-fs 1.0 \
+  --equilibration-frames 1000 \
+  --distance-pair 0,7 \
+  --output analysis/trajectory_report.json \
+  --csv-output analysis/trajectory_timeseries.csv \
   --pretty
 ```
 
-This keeps these front-end artifacts fresh:
+Short AIMD trajectories can falsify obvious stability claims or reveal candidate events. They do not establish long-time rates, equilibrium phase boundaries, or converged transport without adequate sampling.
 
-- `analysis/live_status.csv`
-- `analysis/live_status.json`
-- `analysis/queue_status.json`
-- `analysis/live_monitor_report.md`
+## MLIP And MLMD Lane
 
-On each cycle:
+Follow [mlip-workflows.md](references/mlip-workflows.md):
 
-- compare converged jobs against `workflow/experiment_matrix.csv`
-- decide whether the next queued jobs still cover the required controls and sensitivity axes
-- stop queue expansion if a stale or failed job suggests a method problem
-- for correlated systems, never treat one converged bootstrap job as the whole physics packet
+1. define the deployment domain before selecting a model
+2. inventory elements, charge and spin states, phases, surfaces, defects, temperatures, pressures, strains, and reaction classes
+3. prefer a validated pretrained model for in-domain screening; fine-tune or train when target-domain error is unacceptable
+4. record model family, package and version, checkpoint identifier and checksum, license, precision, device, cutoffs, and calculator settings
+5. validate energies, forces, stresses, geometries, phonons or elastic response, and use-case observables on grouped holdouts and hard challenge sets
+6. compare against at least one simple baseline and targeted DFT spot checks
+7. use committee disagreement, calibrated uncertainty, descriptor distance, or explicit challenge detection to trigger new labels
+8. freeze a model only after active-learning convergence and rerun final holdouts once
+9. monitor extrapolation and physical invariants during production MD; stop rather than integrate through out-of-domain states
 
-## Phase 9: Analysis and Verdict
+Use the installed package's official API for the exact version. Prefer a supported ASE or LAMMPS calculator interface when available. Never invent checkpoint names or silently download large weights.
 
-Use:
+For a trusted ASE-compatible calculator, run bounded proxy inference or relaxation through the generic runner after building a version-checked factory or project adapter:
 
 ```bash
-cd your-project
-python3 scripts/summarize_vasp_runs.py --project-root .
+python3 scripts/run_ase_surrogate.py \
+  --input structures.extxyz \
+  --output analysis/surrogate.extxyz \
+  --factory package.module:CalculatorClass \
+  --config workflow/calculator_config.json \
+  --mode single-point \
+  --allow-code-execution
 ```
 
-Minimum deliverables:
+Start with one frame. The runner records input, output, adapter, and config hashes but does not certify the model domain or silently manage model licensing.
 
-- `analysis/energy_summary.csv`
-- `analysis/run_status.csv`
-- `analysis/claim_verdicts.md`
-- `analysis/open_questions.md`
+## FEM And Multiphysics Lane
 
-Every conclusion must include:
+Follow [fem-multiscale-coupling.md](references/fem-multiscale-coupling.md):
 
-- which relaxed structure supports it
-- which method settings produced it
-- which control calculation it was compared against
-- which uncertainty remains
+1. state governing equations, geometry, dimensionality, initial and boundary conditions, sources, constitutive laws, and coupling terms
+2. classify parameters as direct atomistic outputs, statistically homogenized values, fitted closures, experimental calibrations, or assumptions
+3. record units, tensor rank, basis, symmetry, sign convention, normalization, validity window, and uncertainty for every handoff
+4. verify tensor rotations and energy or flux consistency before import
+5. perform mesh, time-step, domain-size, nonlinear-solver, and stabilization studies
+6. validate the uncoupled FEM model before enabling multiphysics feedback
+7. distinguish numerical convergence from physical validation
 
-## Platform Router
+Support COMSOL, FEniCSx, MOOSE, Abaqus, CalculiX, or a solver-neutral weak form. Generate engine-specific files only when the local version and interface are known.
 
-See [references/platform-interop.md](references/platform-interop.md).
+## Coupled Lane
 
-Short version:
+Represent the workflow as a directed acyclic graph of stages and handoffs. A common hierarchy is:
 
-- Clouds_Coder: prefer `query_knowledge_library` or `load_skill` if available, otherwise use local files plus the bundled scripts.
-- Claude Code: install under `.claude/skills/<name>/` or `~/.claude/skills/<name>/`.
-- OpenCode: install under `.opencode/skills/<name>/`, `~/.config/opencode/skills/<name>/`, or Claude/Agent-compatible paths.
-- Codex: use the Agent Skills package plus `agents/openai.yaml`; the installer supports both `~/.codex/skills/<name>/` and `~/.agents/skills/<name>/` targets.
+```text
+DFT references -> AIMD or configuration generation -> MLIP validation
+-> MLIP-MD sampling -> statistical reduction or homogenization
+-> FEM constitutive model -> device-scale prediction
+```
 
-## Quality Gates
+At every arrow, define:
 
-- Always document structure provenance.
-- Always write the claim matrix before production runs.
-- Keep `analysis/live_monitor_report.md` current while background jobs are active.
-- For correlated or magnetic systems, scan at least one sensitivity axis instead of pretending one setup is universal.
-- For adsorption, defects, NEB, work functions, or optics, make the reference state explicit.
-- Keep method limits visible. Plain DFT or DFT+U cannot prove every experimental mechanism.
-- If the platform exposes a RAG interface and it returns nothing useful, say so and continue with local files and literature.
+- producer artifact and consumer requirement
+- mapping equation or transformation code
+- units, tensor basis, averaging volume, and state variables
+- interpolation and extrapolation policy
+- uncertainty and correlation treatment
+- acceptance test, rejection behavior, and feedback destination
+
+Use DFT spot checks or new labels when MLMD leaves its validated domain. Refit continuum closures when atomistic sampling changes their state dependence. Do not hide empirical calibration inside an apparently first-principles chain.
+
+## Validation And Verdict
+
+Read [multiscale-validation.md](references/multiscale-validation.md). Require independent gates:
+
+- DFT: numerical convergence, reference-state consistency, and method sensitivity
+- AIMD: equilibration, drift, replica consistency, finite-size and sampling checks
+- MLIP: grouped holdouts, hard challenges, physical invariants, stability, and domain detection
+- FEM: verification, mesh/time convergence, conservation, benchmark recovery, and parameter sensitivity
+- coupled: unit and tensor checks, end-to-end conservation, uncertainty propagation, and feedback-loop tests
+
+Report:
+
+- what ran and what was only planned
+- exact software, versions, inputs, seeds, hardware-relevant precision, and model or data identifiers
+- observables with controls, uncertainty, and validity domains
+- failed or inconclusive branches
+- direct support, indirect support, contradiction, and unresolved claims
+- next experiment chosen by information value, not by convenience
+
+## Resource Map
+
+Load only what the task needs:
+
+- core routing: [research-mode-router.md](references/research-mode-router.md)
+- DFT theory and execution: [dft-task-router.md](references/dft-task-router.md), [theory-model-selection.md](references/theory-model-selection.md), [vasp-methodology.md](references/vasp-methodology.md)
+- AIMD and enhanced sampling: [aimd-workflows.md](references/aimd-workflows.md)
+- MLIP selection, training, inference, active learning, and MLMD: [mlip-workflows.md](references/mlip-workflows.md)
+- FEM and atomistic-continuum coupling: [fem-multiscale-coupling.md](references/fem-multiscale-coupling.md)
+- validation and uncertainty: [multiscale-validation.md](references/multiscale-validation.md)
+- long-task orientation, branch governance, and lineage: [research-spine-and-state.md](references/research-spine-and-state.md)
+- engine and ecosystem selection: [engine-capability-matrix.md](references/engine-capability-matrix.md)
+- project schema: [experiment-manifest-contract.md](references/experiment-manifest-contract.md), [project-layout.md](references/project-layout.md)
+- background VASP runs: [live-run-monitoring.md](references/live-run-monitoring.md)
+- platform behavior: [platform-interop.md](references/platform-interop.md)
+- applied study templates: [case-studies/INDEX.md](case-studies/INDEX.md)
+- structure templates: [presets/INDEX.md](presets/INDEX.md)
+
+## Hard Stops
+
+- Do not claim a calculation ran when only inputs were generated.
+- Do not use an MLIP outside its validated domain because an inference call succeeded.
+- Do not infer rates from isolated barriers without a kinetic model and prefactor treatment.
+- Do not infer continuum constants from one atomistic state without a defined homogenization and validity window.
+- Do not compare energies, forces, stresses, tensors, or trajectories produced with incompatible conventions without reconciliation.
+- Do not continue a coupled chain after an upstream validation gate fails.
+- Do not add AIMD, MLIP, MD, homogenization, or FEM merely to make a project look comprehensive; name the scale-specific bottleneck first.

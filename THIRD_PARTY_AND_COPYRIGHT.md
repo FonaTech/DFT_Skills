@@ -71,8 +71,14 @@ This repository may interoperate with or reference separately governed tools and
 - Crystallography Open Database
 - LAMMPS
 - COMSOL
+- Quantum ESPRESSO, CP2K, GPAW, ABINIT, and other electronic-structure engines
+- FEniCSx, MOOSE, Abaqus, CalculiX, and other continuum solvers
+- MLIP packages and plugins such as MACE, NequIP, Allegro, DeePMD-kit, CHGNet, MatGL, SevenNet, GAP/QUIP, and ACE implementations
+- pretrained or fine-tuned model checkpoints, training datasets, benchmark datasets, and model-hosting services
 
 Use of those tools or services is governed by their own licenses, terms, access policies, and citation expectations. This repository does not claim ownership over them and does not relicense them.
+
+Model code and model weights may use different licenses. A checkpoint that is technically downloadable is not automatically licensed for redistribution or every research or commercial use. Record the checkpoint source, version, checksum, license, citation, and permitted-use boundary before inference or fine-tuning. Do not commit large or restricted checkpoints, proprietary FEM models, license files, or third-party training data to this repository.
 
 ## 6. User Data, Uploaded Files, And Local Literature
 
@@ -97,6 +103,7 @@ Contributors to this repository should follow these rules:
 - do not commit third-party structure files unless redistribution rights are clear
 - prefer original summaries, original examples, and URL references over copied instructional content
 - keep API keys, download credentials, and portal access data out of the repository
+- keep model-hosting tokens, restricted checkpoints, solver license files, and proprietary meshes or constitutive databases out of the repository
 - if a file comes from another source, document the provenance and legal basis for inclusion
 
 ## 8. Recommended Contributor Checklist
@@ -135,6 +142,14 @@ Before merging or publishing, verify:
 - Crystallography Open Database: <https://www.crystallography.net/cod/>
 - LAMMPS: <https://www.lammps.org/>
 - COMSOL: <https://www.comsol.com/>
+- Quantum ESPRESSO: <https://www.quantum-espresso.org/>
+- CP2K: <https://www.cp2k.org/>
+- GPAW: <https://gpaw.readthedocs.io/>
+- FEniCSx: <https://fenicsproject.org/>
+- MOOSE: <https://mooseframework.inl.gov/>
+- MACE: <https://github.com/ACEsuit/mace>
+- NequIP: <https://github.com/mir-group/nequip>
+- DeePMD-kit: <https://github.com/deepmodeling/deepmd-kit>
 
 ## 10. Trademarks And Affiliation
 

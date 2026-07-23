@@ -1,10 +1,12 @@
-# COMSOL Coupling And Property Handoff
+# COMSOL And General FEM Property Handoff
 
 ## Engineering Intent
 
-Use this case when DFT is supposed to supply constitutive inputs to COMSOL or another continuum multiphysics model. The workflow should identify exactly which properties are needed, compute only defensible upstream quantities, and then package them with units, basis conventions, validity windows, and caveats.
+Use this case when DFT is supposed to supply constitutive inputs to COMSOL, FEniCSx, MOOSE, Abaqus, CalculiX, or another continuum multiphysics model. The workflow should identify exactly which properties are needed, compute only defensible upstream quantities, and then package them with units, basis conventions, validity windows, and caveats.
 
 Do not pass raw DFT outputs straight into a continuum solver without documenting the interpretation layer.
+
+Read `references/fem-multiscale-coupling.md` for governing-equation specification, tensor and unit mapping, solver verification, feedback, and uncertainty propagation.
 
 ## Questions This Workflow Must Answer
 
