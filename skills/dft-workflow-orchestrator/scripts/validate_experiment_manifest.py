@@ -9,6 +9,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from validate_integrated_research_plan import ALLOWED_STATUSES as PLAN_STATUSES
+from validate_integrated_research_plan import REQUIRED_SECTIONS as PLAN_REQUIRED_SECTIONS
+from validate_integrated_research_plan import inspect_plan
+
 
 ALLOWED_KINDS = {
     "dft",
@@ -44,6 +48,8 @@ STAGE_SCALES = {
 }
 PLACEHOLDER_RE = re.compile(r"(?:\{\{[^{}]+\}\}|<[A-Za-z][^>]*>)")
 REQUIRED_TOP_LEVEL = {"schema_version", "project", "claims", "stages", "handoffs", "resources", "metadata"}
+SUPPORTED_SCHEMA_VERSIONS = {"1.0", "1.1"}
+REQUIRED_PLAN_SYNCHRONIZATION = {"research_spine", "claims", "stages", "handoffs", "next_action_queue"}
 REQUIRED_HANDOFF_HEADERS = {
     "handoff_id",
     "from_stage",
@@ -287,11 +293,94 @@ def check_handoff_csv(path: Path, manifest_handoffs: list[dict[str, Any]], check
         checker.required(False, f"Manifest/register handoff IDs differ: manifest={sorted(manifest_ids)}, register={sorted(ids)}")
 
 
-def validate(payload: dict[str, Any], checker: Checker, handoff_register: Path | None = None) -> dict[str, Any]:
+def check_planning_artifact(
+    payload: dict[str, Any],
+    project_root: Path,
+    claim_ids: set[str],
+    stage_ids: set[str],
+    checker: Checker,
+) -> dict[str, Any] | None:
+    if payload.get("schema_version") != "1.1":
+        return None
+
+    artifact = payload.get("planning_artifact")
+    if not isinstance(artifact, dict):
+        checker.error("schema 1.1 requires a planning_artifact object.")
+        return None
+
+    raw_path = artifact.get("path")
+    if not isinstance(raw_path, str) or not raw_path.strip():
+        checker.error("planning_artifact.path must be a non-empty project-relative path.")
+        return None
+    candidate = Path(raw_path)
+    if candidate.is_absolute():
+        checker.error("planning_artifact.path must be project-relative, not absolute.")
+        return None
+    plan_path = (project_root / candidate).resolve()
+    if plan_path != project_root and project_root not in plan_path.parents:
+        checker.error("planning_artifact.path escapes the project root.")
+        return None
+
+    status = artifact.get("status")
+    if status not in PLAN_STATUSES:
+        checker.error("planning_artifact.status must be draft, current, stale, or superseded.")
+
+    declared_sections = artifact.get("required_sections")
+    if not isinstance(declared_sections, list) or not all(isinstance(item, str) for item in declared_sections):
+        checker.error("planning_artifact.required_sections must be a list of section names.")
+    else:
+        missing_sections = sorted(set(PLAN_REQUIRED_SECTIONS) - set(declared_sections))
+        if missing_sections:
+            checker.error(f"planning_artifact.required_sections omits: {', '.join(missing_sections)}")
+
+    synchronization = artifact.get("synchronizes")
+    if not isinstance(synchronization, list) or not all(isinstance(item, str) for item in synchronization):
+        checker.error("planning_artifact.synchronizes must be a list of control-plane names.")
+    else:
+        missing_sync = sorted(REQUIRED_PLAN_SYNCHRONIZATION - set(synchronization))
+        if missing_sync:
+            checker.error(f"planning_artifact.synchronizes omits: {', '.join(missing_sync)}")
+
+    result = inspect_plan(
+        plan_path,
+        expected_claim_ids=sorted(claim_ids),
+        expected_stage_ids=sorted(stage_ids),
+        require_current=checker.strict,
+        strict=checker.strict,
+    )
+    for message in result["errors"]:
+        checker.error(f"Planning artifact: {message}")
+    for message in result["warnings"]:
+        checker.warning(f"Planning artifact: {message}")
+
+    document_status = result.get("status")
+    if isinstance(status, str) and isinstance(document_status, str) and status != document_status:
+        checker.required(False, f"Planning artifact status drift: manifest={status!r}, document={document_status!r}")
+
+    snapshot = result.get("snapshot")
+    spine = payload.get("research_spine")
+    if isinstance(snapshot, dict) and isinstance(spine, dict):
+        for field in ("objective", "active_claim_id", "current_gate", "next_action", "stop_rule"):
+            manifest_value = str(spine.get(field, "")).strip().strip("`")
+            document_value = str(snapshot.get(field, "")).strip().strip("`")
+            if manifest_value and document_value and manifest_value != document_value:
+                checker.required(
+                    False,
+                    f"Planning artifact control-snapshot drift for {field}: manifest={manifest_value!r}, document={document_value!r}",
+                )
+    return result
+
+
+def validate(
+    payload: dict[str, Any],
+    checker: Checker,
+    handoff_register: Path | None = None,
+    project_root: Path | None = None,
+) -> dict[str, Any]:
     missing = sorted(REQUIRED_TOP_LEVEL - set(payload))
     if missing:
         checker.error(f"Manifest is missing top-level keys: {', '.join(missing)}")
-    if payload.get("schema_version") != "1.0":
+    if payload.get("schema_version") not in SUPPORTED_SCHEMA_VERSIONS:
         checker.error(f"Unsupported schema_version: {payload.get('schema_version')!r}")
     if not isinstance(payload.get("project"), dict):
         checker.error("project must be an object.")
@@ -372,6 +461,14 @@ def validate(payload: dict[str, Any], checker: Checker, handoff_register: Path |
     if handoff_register:
         check_handoff_csv(handoff_register, handoffs, checker)
 
+    planning_artifact = check_planning_artifact(
+        payload,
+        (project_root or Path.cwd()).resolve(),
+        claim_ids,
+        stage_ids,
+        checker,
+    )
+
     placeholder_count = check_placeholders(payload, "$", checker)
     return {
         "schema_version": payload.get("schema_version"),
@@ -380,6 +477,7 @@ def validate(payload: dict[str, Any], checker: Checker, handoff_register: Path |
         "claims": len(claim_map),
         "stages": len(stage_map),
         "handoffs": len(handoff_map),
+        "planning_artifact": planning_artifact,
         "placeholders": placeholder_count,
         "errors": checker.errors,
         "warnings": checker.warnings,
@@ -389,7 +487,7 @@ def validate(payload: dict[str, Any], checker: Checker, handoff_register: Path |
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Validate a multiscale experiment manifest and optional handoff register.")
+    parser = argparse.ArgumentParser(description="Validate a multiscale experiment manifest, integrated plan, and optional handoff register.")
     parser.add_argument("--manifest", type=Path, required=True, help="Path to workflow/experiment_manifest.json.")
     parser.add_argument("--handoff-register", type=Path, help="Optional path to workflow/handoff_register.csv.")
     parser.add_argument("--strict", action="store_true", help="Treat unresolved placeholders and incomplete templates as errors.")
@@ -400,9 +498,15 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     checker = Checker(strict=args.strict)
-    payload = load_json(args.manifest.expanduser().resolve(), checker)
+    manifest_path = args.manifest.expanduser().resolve()
+    payload = load_json(manifest_path, checker)
     if payload is not None:
-        result = validate(payload, checker, args.handoff_register.expanduser().resolve() if args.handoff_register else None)
+        result = validate(
+            payload,
+            checker,
+            args.handoff_register.expanduser().resolve() if args.handoff_register else None,
+            manifest_path.parent.parent,
+        )
     else:
         result = {"errors": checker.errors, "warnings": checker.warnings, "valid": False, "strict": checker.strict}
     if args.pretty:

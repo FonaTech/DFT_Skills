@@ -1,7 +1,7 @@
 ---
 name: dft-workflow-orchestrator
 description: >
-  Design, scaffold, execute, monitor, validate, and report reproducible atomistic-to-continuum materials simulations. Use for DFT or first-principles work with VASP, Quantum ESPRESSO, CP2K, GPAW, or related engines; ab initio molecular dynamics and enhanced sampling; machine-learning interatomic potentials or ML force fields including pretrained inference, fine-tuning, active learning, and production MD; finite-element or multiphysics studies with COMSOL, FEniCSx, MOOSE, Abaqus, or CalculiX; and coupled DFT-AIMD-MLIP-MD-FEM experiments. Also use for structures, adsorption, defects, NEB, electronic structure, optics, phonons, transport, mechanics, thermodynamics, interfaces, catalysis, uncertainty, provenance, literature-to-workflow planning, 第一性原理, 密度泛函, 从头算分子动力学, 机器学习势, 分子动力学, 有限元, 多物理场, 多尺度材料模拟, and 研究主线管理.
+  Design, scaffold, execute, monitor, validate, and report reproducible atomistic-to-continuum materials simulations. Use for DFT or first-principles work with VASP, Quantum ESPRESSO, CP2K, GPAW, or related engines; ab initio molecular dynamics and enhanced sampling; machine-learning interatomic potentials or ML force fields including pretrained inference, fine-tuning, active learning, and production MD; finite-element or multiphysics studies with COMSOL, FEniCSx, MOOSE, Abaqus, or CalculiX; and coupled DFT-AIMD-MLIP-MD-FEM experiments. Also use for detailed integrated research plans, structures, adsorption, defects, NEB, electronic structure, optics, phonons, transport, mechanics, thermodynamics, interfaces, catalysis, uncertainty, provenance, literature-to-workflow planning, 第一性原理, 密度泛函, 从头算分子动力学, 机器学习势, 分子动力学, 有限元, 多物理场, 多尺度材料模拟, and 研究主线管理.
 ---
 
 # Multiscale Materials Workflow Orchestrator
@@ -49,6 +49,16 @@ Before committing an expensive or multi-branch workflow, ask a short design brie
 6. forbidden assumptions and what would count as a useful partial result
 
 Keep questions concise and decision-oriented. If a noncritical detail is unanswered, choose a reversible default and record it. Do not block a routine single-scale scaffold on this brief.
+
+## Mandatory Integrated Planning Artifact
+
+Read [integrated-research-plan-contract.md](references/integrated-research-plan-contract.md). For any research-design, route-selection, methodology, roadmap, complex, branching, or consequential request, create or refresh `workflow/integrated_research_plan.md` before generating launch-ready inputs or starting work. This is a mandatory deliverable, not an optional explanation in chat.
+
+The plan must be a detailed, coherent narrative rather than a list of generated files. It must contain the scientific decision, boundary and non-goals, model and scale rationale, assumptions, staged roadmap, each stage's method and derivation logic, inputs, outputs, controls, acceptance and stop gates, resource-aware sequence, negative conclusions, escalation triggers, and definition of done. Use stable phase or stage labels such as `P0`, `N0`, `S01`, or `A` through `G`.
+
+Generate the artifact for DFT-only planning as well as coupled work. A detailed document does not authorize an unnecessary second scale: retain the smallest sufficient route and state the observable that would justify escalation. A narrow execution-only request may reuse a current plan, but must not proceed from a stale or conflicting plan.
+
+Before calling a task complete, synchronize the plan's `Control Snapshot` with `workflow/research_spine.md`, `experiment_manifest.json`, the claim matrix, branch register, decision log, and next-action queue. Do not replace the integrated plan with placeholders after the user has provided enough information; unresolved facts must be explicit assumptions with a risk and resolution path.
 
 ## Phase 0: Preflight
 
@@ -114,7 +124,7 @@ Record rejected or deferred scales in `workflow/research_contract.md` and `exper
 
 ## Phase 3: Create The Planning Authority
 
-For routine DFT-only projects, preserve the existing lightweight scaffold:
+For routine DFT-only projects, use the DFT scaffold. It now creates the integrated plan by default; fill its stage narrative before materializing production jobs:
 
 ```bash
 python3 scripts/scaffold_dft_project.py \
@@ -125,9 +135,9 @@ python3 scripts/scaffold_dft_project.py \
   --task dos
 ```
 
-For a complex or branching DFT-only project, use the full research control plane with `--stage dft` only. This does not create a multiscale chain or any handoff; it adds the design brief, research spine, branch register, lineage, and next-action queue.
+For a complex or branching DFT-only project, use the full research control plane with `--stage dft` only. This does not create a multiscale chain or any handoff; it adds the integrated plan, design brief, research spine, branch register, lineage, and next-action queue.
 
-For AIMD, MLIP, FEM, coupled work, or complex single-scale work, create the full packet:
+For AIMD, MLIP, FEM, coupled work, or complex single-scale work, create the full packet. Its integrated plan is a required manifest-tracked artifact:
 
 ```bash
 python3 scripts/scaffold_multiscale_project.py \
@@ -142,6 +152,7 @@ python3 scripts/scaffold_multiscale_project.py \
 
 Read [experiment-manifest-contract.md](references/experiment-manifest-contract.md). The project-level authority is:
 
+- `workflow/integrated_research_plan.md`
 - `workflow/research_contract.md`
 - `workflow/decision_brief.md`
 - `workflow/research_spine.md`
@@ -166,6 +177,8 @@ python3 scripts/validate_experiment_manifest.py \
 ```
 
 Use `--strict` only after placeholders are resolved and the workflow is launch-ready.
+
+The validator enforces the integrated-plan structure for new schema `1.1` projects. Treat a missing plan, missing stage, or plan/spine disagreement as a planning defect before launch. A plan in `draft` is acceptable only for design work; change it to `current` once the route and gates are reconciled.
 
 Keep the research spine current while work branches: after each run, update the current gate, claim verdict, branch status, and one prioritized next action. Refresh it with:
 
@@ -347,6 +360,7 @@ Load only what the task needs:
 - MLIP selection, training, inference, active learning, and MLMD: [mlip-workflows.md](references/mlip-workflows.md)
 - FEM and atomistic-continuum coupling: [fem-multiscale-coupling.md](references/fem-multiscale-coupling.md)
 - validation and uncertainty: [multiscale-validation.md](references/multiscale-validation.md)
+- detailed planning artifact and stage narrative: [integrated-research-plan-contract.md](references/integrated-research-plan-contract.md)
 - long-task orientation, branch governance, and lineage: [research-spine-and-state.md](references/research-spine-and-state.md)
 - engine and ecosystem selection: [engine-capability-matrix.md](references/engine-capability-matrix.md)
 - project schema: [experiment-manifest-contract.md](references/experiment-manifest-contract.md), [project-layout.md](references/project-layout.md)
@@ -364,3 +378,4 @@ Load only what the task needs:
 - Do not compare energies, forces, stresses, tensors, or trajectories produced with incompatible conventions without reconciliation.
 - Do not continue a coupled chain after an upstream validation gate fails.
 - Do not add AIMD, MLIP, MD, homogenization, or FEM merely to make a project look comprehensive; name the scale-specific bottleneck first.
+- Do not substitute a collection of templates, a manifest, or a chat summary for `workflow/integrated_research_plan.md` when the planning-artifact contract applies.

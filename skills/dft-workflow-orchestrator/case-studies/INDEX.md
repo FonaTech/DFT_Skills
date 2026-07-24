@@ -19,7 +19,7 @@ Each case file is expected to give:
 1. Match the user's decisive observable, not the most attractive figure type.
 2. Open only the single most relevant case file first.
 3. Add a second case only if the workflow truly crosses domains, for example interface plus optics, or DFT plus COMSOL handoff.
-4. Translate the chosen case into `workflow/request_summary.md`, `workflow/theory_packet.md`, `workflow/claim_matrix.md`, and `workflow/experiment_matrix.csv`.
+4. Translate the chosen case first into `workflow/integrated_research_plan.md`, then into `workflow/request_summary.md`, `workflow/theory_packet.md`, `workflow/claim_matrix.md`, and `workflow/experiment_matrix.csv`.
 5. Keep all generated structures, runs, and analysis in the project root rather than inside the skill bundle.
 
 ## Routing Table

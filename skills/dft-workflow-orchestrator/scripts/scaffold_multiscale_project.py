@@ -27,6 +27,7 @@ STAGE_KINDS = (
 HELPER_SCRIPTS = [
     "preflight_multiscale_env.py",
     "preflight_dft_env.py",
+    "validate_integrated_research_plan.py",
     "validate_experiment_manifest.py",
     "maintain_research_spine.py",
     "audit_mlip_dataset.py",
@@ -128,6 +129,19 @@ STAGE_SCALES = {
     "analysis": None,
     "coupling": None,
 }
+
+PLAN_REQUIRED_SECTIONS = [
+    "Research Decision And Scope",
+    "Control Snapshot",
+    "Scientific Rationale And Scale Decision",
+    "Evidence, Models, And Assumptions",
+    "Stage Roadmap",
+    "Stage Gates And Deliverables",
+    "Resource-Aware Execution Order",
+    "Risks, Negative Results, And Escalation",
+    "Research Spine Synchronization",
+    "Definition Of Done",
+]
 
 
 def ensure_dir(path: Path) -> None:
@@ -280,6 +294,129 @@ Read this file first when resuming the project. Update it after every gate, fail
 """
 
 
+def integrated_research_plan_md(
+    system_name: str, claims: list[tuple[str, str]], stages: list[dict[str, Any]], stage_kinds: list[str]
+) -> str:
+    primary_id, primary_claim = claims[0]
+    route = " -> ".join(stage_kinds)
+    claim_lines = "\n".join(f"- `{claim_id}`: {claim_text}" for claim_id, claim_text in claims)
+    stage_blocks: list[str] = []
+    for stage in stages:
+        claim_refs = ", ".join(f"`{item}`" for item in stage["claim_ids"])
+        dependencies = ", ".join(f"`{item}`" for item in stage["depends_on"]) or "none; entry stage"
+        stage_blocks.extend(
+            [
+                f"### {stage['id']}: {stage['name']}",
+                "",
+                f"- Question and claims: {stage['purpose']} Claims: {claim_refs}.",
+                f"- Dependencies and inputs: depends on {dependencies}; inputs: {', '.join(stage['inputs'])}.",
+                f"- Method and reasoning: <explain why the {stage['kind']} model, approximation, and state grid can reduce the decision-critical uncertainty>.",
+                f"- Controls and validation: controls: {', '.join(stage['controls'])}; independent checks: {', '.join(stage['validation'])}.",
+                f"- Outputs and consumer: {', '.join(stage['outputs'])}; record schema, units, basis, validity domain, and downstream use.",
+                f"- Acceptance and feedback: {stage['pass_condition']} Failure route: {stage['failure_route']}",
+                "",
+            ]
+        )
+
+    return "\n".join(
+        [
+            f"# Integrated Research Plan: {system_name}",
+            "",
+            "- Plan status: draft",
+            "- Planning authority: this narrative explains the scientific route; the manifest and control files remain the operational source of truth.",
+            "",
+            "## 1. Research Decision And Scope",
+            "",
+            f"- Primary claim: `{primary_id}` - {primary_claim}",
+            "- Decision to inform: <state the scientific or engineering decision that changes with the claim verdict>.",
+            "- System boundary and operating window: <composition, phase, interfaces, defects, charge, spin, temperature, pressure, field, strain, geometry, and environment>.",
+            "- Non-goals: <state intentionally excluded observables, scales, or decisions>.",
+            "",
+            "## 2. Control Snapshot",
+            "",
+            f"- Objective: {primary_claim}",
+            f"- Active claim: {primary_id}",
+            "- Current gate: workflow design and strict manifest validation",
+            "- Next action: complete the design brief and resolve launch-critical placeholders",
+            "- Stop rule: <define when the decision is answered or the project must stop>",
+            "",
+            "## 3. Scientific Rationale And Scale Decision",
+            "",
+            f"- Selected route: {route}",
+            f"- Minimum required scales: {', '.join(scales_for_stages(stage_kinds)) or 'none; analysis or coupling only'}.",
+            "- Why this route is sufficient: <connect each stage to the decisive observable and identify the information it adds>.",
+            "- Deferred scales: <record plausible scales that are not currently needed>.",
+            "- Escalation trigger: <state the observable, failed gate, or boundary condition that would justify another scale>.",
+            "",
+            "## 4. Evidence, Models, And Assumptions",
+            "",
+            "- Candidate mechanisms and alternatives: <record competing explanations and how the route can distinguish them>.",
+            "- Model ladder: <state electronic-structure method, sampling model, MLIP family or checkpoint, continuum closure, and experimental calibration as applicable>.",
+            "- Evidence and provenance: <user material, local files, literature, official documentation, databases, labels, checkpoints, and solver versions>.",
+            "- Assumptions awaiting resolution: <assumption; risk if false; evidence or owner needed to resolve it; launch blocker yes/no>.",
+            "",
+            "## 5. Stage Roadmap",
+            "",
+            "### P0: Freeze the decision boundary and design brief",
+            "",
+            "- Close: primary claim, route, depth, deliverables, budget, validation standard, and forbidden substitutions are explicit.",
+            "- Gate: no expensive route is committed while a route-changing user preference is unresolved.",
+            "",
+            "### P1: Establish sources, structures, reference states, and model controls",
+            "",
+            "- Close: every input has provenance and each model layer has a defined validity domain.",
+            "- Gate: do not start a stage from an untracked structure, dataset, checkpoint, material parameter, or solver assumption.",
+            "",
+            *stage_blocks,
+            "## 6. Stage Gates And Deliverables",
+            "",
+            "| Stage | Decision contribution | Required deliverable | Acceptance, stop, or feedback condition |",
+            "|---|---|---|---|",
+            "| P0 | bounds the research question | confirmed design brief | route-changing choices are resolved or explicitly assumed |",
+            "| P1 | establishes valid inputs | provenance and method packet | input and validity gaps are visible |",
+            *[
+                f"| {stage['id']} | {stage['purpose']} | {', '.join(stage['outputs'])} | {stage['pass_condition']} |"
+                for stage in stages
+            ],
+            "| Verdict | supports, contradicts, or retires a claim | claim verdict packet | direct evidence, uncertainty, and limits are explicit |",
+            "",
+            "## 7. Resource-Aware Execution Order",
+            "",
+            "1. Complete P0-P1 and the lowest-cost decisive stage before broad sweeps or downstream coupling.",
+            "2. Resolve the dominant model-form, data, or numerical uncertainty before expanding state grids or branch count.",
+            "3. Open a side branch only when its expected information gain can change the decision and it has a pass and kill criterion.",
+            "4. Start a downstream stage only after the required upstream gate and handoff acceptance pass.",
+            "",
+            "## 8. Risks, Negative Results, And Escalation",
+            "",
+            "- A failed convergence, validation, domain, unit, tensor, or conservation check is a blocked gate rather than a result to carry downstream.",
+            "- If alternatives overlap within uncertainty, report an inconclusive decision instead of forcing a ranking or mechanism.",
+            "- If a new scale is necessary, state its decisive observable, consumer, validation gate, and feedback route before adding it.",
+            "- Retain negative results that rule out a structure, mechanism, potential, closure, or boundary condition.",
+            "",
+            "## 9. Research Spine Synchronization",
+            "",
+            "- Keep the Control Snapshot synchronized with `workflow/research_spine.md` and the manifest `research_spine` block.",
+            "- Keep claim IDs, stage IDs, dependencies, gates, and handoffs synchronized with `workflow/experiment_manifest.json` and `workflow/claim_matrix.csv`.",
+            "- Keep branch scope and promotion rules synchronized with `workflow/branch_register.csv`, `workflow/decision_log.md`, and `workflow/next_action_queue.csv`.",
+            "- Review this plan after every gate, failure, promotion, route change, or project resume; mark it stale rather than silently letting it drift.",
+            "",
+            "## 10. Definition Of Done",
+            "",
+            "- [ ] All claims have observables, units, pass conditions, and direct or explicitly indirect evidence.",
+            "- [ ] Every completed stage has traceable inputs, controls, validation artifacts, validity limits, and a recorded result state.",
+            "- [ ] Every handoff has compatible units, schema, basis, state variables, uncertainty, and rejection behavior.",
+            "- [ ] The current plan, research spine, manifest, branch register, and next-action queue agree.",
+            "- [ ] The final conclusion distinguishes completed work, planned work, negative results, inconclusive outcomes, and justified next steps.",
+            "",
+            "## Claims",
+            "",
+            claim_lines,
+            "",
+        ]
+    )
+
+
 def decision_log_md() -> str:
     return """# Decision Log
 
@@ -425,7 +562,7 @@ def main() -> int:
             )
 
     manifest = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "project": {"name": project_name, "system": args.system_name, "root": "."},
         "user_preferences": {
             "route": "<record user route preference or agent-selected route>",
@@ -448,6 +585,13 @@ def main() -> int:
             "rationale": "<explain why this is the smallest sufficient scale stack>",
             "escalation_trigger": "<observable or failed gate that requires another scale>",
         },
+        "planning_artifact": {
+            "path": "workflow/integrated_research_plan.md",
+            "status": "draft",
+            "required_sections": PLAN_REQUIRED_SECTIONS,
+            "synchronizes": ["research_spine", "claims", "stages", "handoffs", "next_action_queue"],
+            "last_reviewed": "",
+        },
         "claims": [
             {
                 "id": claim_id,
@@ -469,6 +613,7 @@ def main() -> int:
     }
 
     text_files = {
+        "workflow/integrated_research_plan.md": integrated_research_plan_md(args.system_name, claims, stages, stage_kinds),
         "workflow/research_contract.md": research_contract(args.system_name, stage_kinds, claims),
         "workflow/decision_brief.md": decision_brief_md(),
         "workflow/research_spine.md": research_spine_md(args.system_name, claims, stage_kinds),
@@ -615,8 +760,10 @@ def main() -> int:
                 "stage_kinds": stage_kinds,
                 "claims": [{"id": cid, "text": text} for cid, text in claims],
                 "manifest": str((project_root / "workflow/experiment_manifest.json").relative_to(project_root)),
+                "planning_artifact": "workflow/integrated_research_plan.md",
                 "created_or_updated": created,
                 "next": "python3 scripts/validate_experiment_manifest.py --manifest workflow/experiment_manifest.json --handoff-register workflow/handoff_register.csv",
+                "planning_validation": "python3 scripts/validate_integrated_research_plan.py --plan workflow/integrated_research_plan.md --pretty",
                 "research_spine_next": "python3 scripts/maintain_research_spine.py --project-root . --pretty",
             },
             indent=2,

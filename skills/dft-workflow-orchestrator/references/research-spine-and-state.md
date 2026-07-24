@@ -28,6 +28,8 @@ Maintain one short `workflow/research_spine.md` with:
 
 Keep this file readable without opening raw trajectories, logs, or every branch. It is the first file to read when a task resumes after interruption or context compaction.
 
+Maintain `workflow/integrated_research_plan.md` alongside it. The spine is deliberately short; the integrated plan is the detailed narrative of the decision boundary, method rationale, staged gates, resource order, negative outcomes, and definition of done. Its `Control Snapshot` must match the spine and manifest. Read [integrated-research-plan-contract.md](integrated-research-plan-contract.md) before creating or revising it.
+
 ## Claim And Gate State
 
 Use stable claim IDs (`C01`, `C02`, ...) and stage IDs (`S01`, `S02`, ...). A claim can be:
@@ -154,6 +156,8 @@ python3 scripts/maintain_research_spine.py --project-root . --pretty
 The generated report should expose:
 
 - drift between `workflow/research_spine.md` and the manifest's `research_spine` block
+- drift between the integrated plan's `Control Snapshot` and the manifest's `research_spine` block
+- missing required integrated-plan sections, claim IDs, or stage IDs
 - current claim and stage counts
 - active, orphaned, stale, and unbounded branches
 - missing or invalid lineage references
@@ -165,7 +169,7 @@ The generated report should expose:
 When a project has become difficult to follow:
 
 1. stop new branch creation
-2. read `research_spine.md`, `claim_matrix.csv`, and the latest decision log
+2. read `research_spine.md`, `integrated_research_plan.md`, `claim_matrix.csv`, and the latest decision log
 3. inventory stages and artifacts from the manifest and lineage table
 4. mark orphaned or duplicate branches as deferred, merged, or killed
 5. choose one current claim and one next gate

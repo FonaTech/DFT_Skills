@@ -5,6 +5,7 @@ The scaffold script assumes this layout:
 ```text
 project/
 ├── workflow/
+│   ├── integrated_research_plan.md
 │   ├── request_summary.md
 │   ├── knowledge_sources.md
 │   ├── theory_packet.md
@@ -35,6 +36,7 @@ For AIMD, MLIP, MD, FEM, or coupled work, `scaffold_multiscale_project.py` exten
 ```text
 project/
 ├── workflow/
+│   ├── integrated_research_plan.md
 │   ├── research_contract.md
 │   ├── decision_brief.md
 │   ├── research_spine.md
@@ -61,6 +63,7 @@ project/
 ## Rules
 
 - `workflow/` is the planning authority.
+- `workflow/integrated_research_plan.md` is the detailed narrative route: decision, scope, rationale, staged gates, resource order, risks, and definition of done. Keep it current even for a detailed DFT-only project.
 - `workflow/research_spine.md` is the first-read north-star for long or resumed tasks.
 - `workflow/branch_register.csv` bounds side branches and records merge or kill decisions.
 - `workflow/data_lineage.csv` traces structures, labels, trajectories, datasets, models, meshes, handoffs, and verdicts.
@@ -78,6 +81,7 @@ project/
 
 Do not start production calculations until these exist:
 
+- `workflow/integrated_research_plan.md`
 - `workflow/request_summary.md`
 - `workflow/knowledge_sources.md`
 - `workflow/theory_packet.md`
@@ -88,6 +92,7 @@ Do not start production calculations until these exist:
 
 For a multiscale or branching project, also require:
 
+- an integrated plan whose control snapshot agrees with the research spine and manifest
 - a confirmed or explicitly design-tier `workflow/decision_brief.md`
 - a current `workflow/research_spine.md`
 - a non-orphaned `workflow/branch_register.csv`

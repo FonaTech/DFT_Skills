@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from validate_integrated_research_plan import inspect_plan
+
 
 BRANCH_STATUSES = {"proposed", "active", "paused", "passed", "failed", "merged", "killed", "deferred"}
 ACTION_STATUSES = {"proposed", "ready", "active", "blocked", "done", "killed", "deferred"}
@@ -129,15 +131,79 @@ def read_spine_markdown(path: Path, strict: bool, warnings: list[str], errors: l
 
 
 def compare_spine_sources(
-    manifest_spine: dict[str, Any], markdown_spine: dict[str, str], strict: bool, warnings: list[str], errors: list[str]
+    manifest_spine: dict[str, Any],
+    markdown_spine: dict[str, str],
+    strict: bool,
+    warnings: list[str],
+    errors: list[str],
+    source_name: str = "Research spine",
 ) -> None:
     for field in ("objective", "active_claim_id", "current_gate", "next_action", "stop_rule"):
         manifest_value = str(manifest_spine.get(field, "")).strip().strip("`")
         markdown_value = markdown_spine.get(field, "").strip().strip("`")
         if manifest_value and markdown_value and manifest_value != markdown_value:
             (errors if strict else warnings).append(
-                f"Research spine drift for {field}: manifest={manifest_value!r}, markdown={markdown_value!r}"
+                f"{source_name} drift for {field}: manifest={manifest_value!r}, document={markdown_value!r}"
             )
+
+
+def planning_artifact_path(project_root: Path, manifest: dict[str, Any], errors: list[str]) -> Path | None:
+    artifact = manifest.get("planning_artifact")
+    if not isinstance(artifact, dict):
+        if manifest.get("schema_version") == "1.1":
+            errors.append("schema 1.1 manifest is missing planning_artifact.")
+        return None
+    raw_path = artifact.get("path")
+    if not isinstance(raw_path, str) or not raw_path.strip():
+        errors.append("planning_artifact.path is missing.")
+        return None
+    candidate = Path(raw_path)
+    if candidate.is_absolute():
+        errors.append("planning_artifact.path must be project-relative.")
+        return None
+    resolved = (project_root / candidate).resolve()
+    if resolved != project_root and project_root not in resolved.parents:
+        errors.append("planning_artifact.path escapes the project root.")
+        return None
+    return resolved
+
+
+def inspect_planning_artifact(
+    path: Path | None,
+    manifest: dict[str, Any],
+    strict: bool,
+    warnings: list[str],
+    errors: list[str],
+) -> dict[str, Any] | None:
+    if path is None:
+        return None
+    claim_ids = [
+        item["id"]
+        for item in manifest.get("claims", [])
+        if isinstance(item, dict) and isinstance(item.get("id"), str) and item["id"]
+    ]
+    stage_ids = [
+        item["id"]
+        for item in manifest.get("stages", [])
+        if isinstance(item, dict) and isinstance(item.get("id"), str) and item["id"]
+    ]
+    result = inspect_plan(
+        path,
+        expected_claim_ids=claim_ids,
+        expected_stage_ids=stage_ids,
+        require_current=strict,
+        strict=strict,
+    )
+    errors.extend(f"Planning artifact: {message}" for message in result["errors"])
+    warnings.extend(f"Planning artifact: {message}" for message in result["warnings"])
+    artifact = manifest.get("planning_artifact")
+    declared_status = artifact.get("status") if isinstance(artifact, dict) else None
+    document_status = result.get("status")
+    if isinstance(declared_status, str) and isinstance(document_status, str) and declared_status != document_status:
+        (errors if strict else warnings).append(
+            f"Planning artifact status drift: manifest={declared_status!r}, document={document_status!r}"
+        )
+    return result
 
 
 def split_ids(value: str | None) -> list[str]:
@@ -392,6 +458,9 @@ def audit_spine(
 
 def markdown_report(report: dict[str, Any]) -> str:
     spine = report.get("research_spine", {})
+    planning_artifact = report.get("planning_artifact") or {}
+    planning_status = planning_artifact.get("status", "<not tracked>") if isinstance(planning_artifact, dict) else "<not tracked>"
+    planning_path = planning_artifact.get("path", "<not tracked>") if isinstance(planning_artifact, dict) else "<not tracked>"
     lines = [
         "# Research Status",
         "",
@@ -401,6 +470,7 @@ def markdown_report(report: dict[str, Any]) -> str:
         f"- Active claim: {spine.get('active_claim_id', '<not recorded>')}",
         f"- Current gate: {spine.get('current_gate', '<not recorded>')}",
         f"- Next action: {spine.get('next_action', '<not recorded>')}",
+        f"- Integrated plan: {planning_path} ({planning_status})",
         "",
         "## Counts",
         "",
@@ -445,6 +515,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lineage", type=Path, help="Override data lineage path.")
     parser.add_argument("--action-queue", type=Path, help="Override next-action queue path.")
     parser.add_argument("--spine-file", type=Path, help="Override workflow/research_spine.md path.")
+    parser.add_argument("--plan-file", type=Path, help="Override workflow/integrated_research_plan.md path.")
     parser.add_argument("--stale-days", type=int, default=14, help="Age in days after which an active branch is warned as stale.")
     parser.add_argument("--strict", action="store_true", help="Treat missing spine and unbounded branches as errors.")
     parser.add_argument("--no-write", action="store_true", help="Print the report without writing analysis/research_status files.")
@@ -465,16 +536,32 @@ def main() -> int:
     lineage_path = (args.lineage or root / "workflow" / "data_lineage.csv").expanduser().resolve()
     queue_path = (args.action_queue or root / "workflow" / "next_action_queue.csv").expanduser().resolve()
     spine_path = (args.spine_file or root / "workflow" / "research_spine.md").expanduser().resolve()
+    declared_plan_path = planning_artifact_path(root, manifest, errors)
+    plan_path = (args.plan_file.expanduser().resolve() if args.plan_file else declared_plan_path)
     branch_rows = read_csv(branch_path, BRANCH_HEADERS, warnings, errors)
     lineage_rows = read_csv(lineage_path, LINEAGE_HEADERS, warnings, errors)
     queue_rows = read_csv(queue_path, QUEUE_HEADERS, warnings, errors)
     markdown_spine = read_spine_markdown(spine_path, args.strict, warnings, errors)
+    planning_artifact = inspect_planning_artifact(plan_path, manifest, args.strict, warnings, errors)
     report = audit_spine(root, manifest, branch_rows, lineage_rows, queue_rows, args.stale_days, args.strict, warnings, errors)
     manifest_spine = manifest.get("research_spine")
     if isinstance(manifest_spine, dict):
         compare_spine_sources(manifest_spine, markdown_spine, args.strict, warnings, errors)
+        if isinstance(planning_artifact, dict):
+            snapshot = planning_artifact.get("snapshot")
+            if isinstance(snapshot, dict):
+                compare_spine_sources(
+                    manifest_spine,
+                    snapshot,
+                    args.strict,
+                    warnings,
+                    errors,
+                    source_name="Planning artifact control snapshot",
+                )
     report["spine_file"] = str(spine_path)
     report["spine_markdown"] = markdown_spine
+    report["planning_artifact_path"] = str(plan_path) if plan_path else None
+    report["planning_artifact"] = planning_artifact
     report["errors"] = errors
     report["warnings"] = warnings
     report["health"] = "red" if errors else "amber" if warnings else "green"
@@ -488,6 +575,8 @@ def main() -> int:
     if args.pretty:
         print(f"Health: {report['health']}")
         print(f"Claims={report['counts']['claims']} stages={report['counts']['stages']} branches={report['counts']['branches']} artifacts={report['counts']['artifacts']}")
+        plan_status = (report.get("planning_artifact") or {}).get("status", "<not tracked>")
+        print(f"Plan: {plan_status}")
         next_action = (report["next_actions"] or [{"action": "<none>"}])[0].get("action")
         print(f"Next: {next_action}")
         for message in report["errors"]:

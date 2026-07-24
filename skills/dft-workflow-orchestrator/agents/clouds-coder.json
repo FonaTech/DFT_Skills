@@ -65,7 +65,7 @@
     "多尺度材料模拟",
     "研究主线"
   ],
-  "description": "Portable materials-simulation orchestrator for DFT, VASP and other electronic-structure engines, AIMD, MLIP inference and training, active learning, MLIP-driven MD, FEM and multiphysics coupling, uncertainty, provenance, and long-task research-state control. Use it to choose the smallest sufficient scale, clarify complex research goals, scaffold and validate experiments, preserve the research spine, and execute the established VASP workflow where available.",
+  "description": "Portable materials-simulation orchestrator for DFT, VASP and other electronic-structure engines, AIMD, MLIP inference and training, active learning, MLIP-driven MD, FEM and multiphysics coupling, uncertainty, provenance, detailed integrated research plans, and long-task research-state control. Use it to choose the smallest sufficient scale, clarify complex research goals, scaffold and validate experiments, preserve the research spine, and execute the established VASP workflow where available.",
   "license": "MIT",
   "compatibility": "Agent Skills compatible. Works with shell and file tools; execution depends on locally available licensed engines, pseudopotentials, model checkpoints, Python packages, and FEM solvers.",
   "metadata": {
@@ -87,6 +87,7 @@
   "entrypoints": [
     "references/research-mode-router.md",
     "references/research-spine-and-state.md",
+    "references/integrated-research-plan-contract.md",
     "references/knowledge-grounding-protocol.md",
     "references/theory-model-selection.md",
     "references/dft-task-router.md",
@@ -105,6 +106,7 @@
     "scripts/preflight_multiscale_env.py",
     "scripts/preflight_dft_env.py",
     "scripts/scaffold_multiscale_project.py",
+    "scripts/validate_integrated_research_plan.py",
     "scripts/validate_experiment_manifest.py",
     "scripts/maintain_research_spine.py",
     "scripts/audit_mlip_dataset.py",
@@ -149,6 +151,7 @@
     "entrypoints": [
       "references/research-mode-router.md",
       "references/research-spine-and-state.md",
+      "references/integrated-research-plan-contract.md",
       "references/knowledge-grounding-protocol.md",
       "references/theory-model-selection.md",
       "references/dft-task-router.md",
@@ -159,6 +162,6 @@
       "case-studies/INDEX.md",
       "presets/INDEX.md"
     ],
-    "runtime_contract": "Probe the runtime before promising execution. Ask a concise design brief when route, depth, goals, or resources change a complex workflow. Choose the smallest sufficient scale and record deferred scales. Ground theory in uploaded or local sources, then local RAG, then online sources, then marked model prior. Keep a research spine, bounded branch register, data lineage, and prioritized next action current throughout long tasks. Require independent validation at DFT, AIMD, MLIP, MD, homogenization, FEM, and coupling gates. Never fabricate inputs, checkpoints, licenses, convergence, or completed runs. Keep generated work outside the skill bundle."
+    "runtime_contract": "Probe the runtime before promising execution. Ask a concise design brief when route, depth, goals, or resources change a complex workflow. Create and keep workflow/integrated_research_plan.md as the required detailed planning artifact for research-design work, including DFT-only plans; synchronize its control snapshot with the research spine and manifest. Choose the smallest sufficient scale and record deferred scales. Ground theory in uploaded or local sources, then local RAG, then online sources, then marked model prior. Keep a research spine, bounded branch register, data lineage, and prioritized next action current throughout long tasks. Require independent validation at DFT, AIMD, MLIP, MD, homogenization, FEM, and coupling gates. Never fabricate inputs, checkpoints, licenses, convergence, or completed runs. Keep generated work outside the skill bundle."
   }
 }

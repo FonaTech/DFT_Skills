@@ -17,6 +17,7 @@ The multiscale scaffold creates:
 
 ```text
 workflow/
+├── integrated_research_plan.md
 ├── research_contract.md
 ├── decision_brief.md
 ├── research_spine.md
@@ -41,11 +42,12 @@ Top-level keys:
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "project": {"name": "...", "system": "...", "root": "..."},
   "user_preferences": {"route": "...", "depth": "...", "deliverables": [], "constraints": [], "accepted_alternatives": []},
   "research_spine": {"objective": "...", "active_claim_id": "C01", "current_gate": "...", "next_action": "...", "stop_rule": "...", "non_goals": []},
   "scale_decision": {"required_scales": ["..."], "deferred_scales": ["..."], "rationale": "...", "escalation_trigger": "..."},
+  "planning_artifact": {"path": "workflow/integrated_research_plan.md", "status": "draft", "required_sections": ["..."], "synchronizes": ["research_spine", "claims", "stages", "handoffs", "next_action_queue"], "last_reviewed": ""},
   "claims": [{"id": "C01", "text": "...", "observable": "...", "pass_condition": "..."}],
   "stages": [{"id": "S01", "kind": "dft", "name": "...", "depends_on": [], "inputs": [], "outputs": [], "controls": [], "validation": [], "status": "planned"}],
   "handoffs": [{"id": "H01", "from_stage": "S01", "to_stage": "S02", "artifact": "...", "quantity_type": "...", "schema": "...", "mapping": "...", "units": "...", "basis": "...", "voigt_order": "...", "sign_convention": "...", "state_variables": "...", "averaging_rule": "...", "uncertainty": "...", "validity": "...", "acceptance": "..."}],
@@ -75,7 +77,13 @@ Every stage must declare:
 
 The top-level `scale_decision` should declare the minimum sufficient scales, deliberately deferred scales, the rationale, and the observable trigger for escalation. It is optional for legacy DFT-only packets but required for a strict multiscale review.
 
-The top-level `research_spine` is the live orientation record. Keep its objective, active claim, current gate, next action, and stop rule synchronized with `workflow/research_spine.md`. Use `workflow/branch_register.csv` to govern side branches, `workflow/data_lineage.csv` to trace artifacts, `workflow/next_action_queue.csv` to limit work in progress, and `workflow/decision_log.md` for append-only promotion decisions. Read [research-spine-and-state.md](research-spine-and-state.md) for the full protocol.
+The top-level `research_spine` is the live orientation record. Keep its objective, active claim, current gate, next action, and stop rule synchronized with `workflow/research_spine.md` and the `Control Snapshot` in `workflow/integrated_research_plan.md`. Use `workflow/branch_register.csv` to govern side branches, `workflow/data_lineage.csv` to trace artifacts, `workflow/next_action_queue.csv` to limit work in progress, and `workflow/decision_log.md` for append-only promotion decisions. Read [research-spine-and-state.md](research-spine-and-state.md) and [integrated-research-plan-contract.md](integrated-research-plan-contract.md) for the full protocol.
+
+## Integrated Planning Artifact
+
+New multiscale scaffold projects use schema `1.1` and must declare `planning_artifact`. It points to the detailed, human-readable `workflow/integrated_research_plan.md`; it is not a replacement for the manifest.
+
+The plan must contain the required planning-contract sections, every claim ID, every stage ID, and a control snapshot that matches `research_spine`. Use `draft` while design assumptions are open, `current` before an expensive launch, `stale` when the route has drifted, and `superseded` only when a decision log points to a replacement. Schema `1.0` remains accepted by the validator for existing projects, but new scaffolded projects must use `1.1`.
 
 Stage-specific minimums:
 
@@ -118,6 +126,7 @@ The bundled validator checks:
 - required handoff fields and register headers
 - duplicate IDs and unresolved template placeholders
 - strict-mode completeness for controls, outputs, validation, and pass conditions
+- for schema `1.1`, the integrated plan location, required sections, claim and stage coverage, status, and control-snapshot synchronization
 
 It deliberately does not certify scientific correctness, units, executable availability, or numerical convergence. Those require the branch-specific gates.
 
@@ -125,11 +134,12 @@ It deliberately does not certify scientific correctness, units, executable avail
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "project": {"name": "oxide-coupled-device", "system": "proton conductor", "root": "."},
   "user_preferences": {"route": "DFT to MLIP-MD to FEM", "depth": "production", "deliverables": ["validated conductivity closure", "device response"], "constraints": ["target-domain validation required"], "accepted_alternatives": ["AIMD pilot before MLIP"]},
   "research_spine": {"objective": "Decide whether proton transport changes device response", "active_claim_id": "C01", "current_gate": "validate the MLIP on transport-relevant states", "next_action": "DFT-label challenge configurations", "stop_rule": "stop when propagated uncertainty no longer changes the device decision", "non_goals": ["electrode degradation"]},
   "scale_decision": {"required_scales": ["electronic", "atomistic-surrogate", "extended-atomistic", "continuum"], "deferred_scales": [], "rationale": "Transport needs atomistic sampling and device geometry changes the decision.", "escalation_trigger": "MLIP or constitutive validity failure sends the workflow upstream."},
+  "planning_artifact": {"path": "workflow/integrated_research_plan.md", "status": "current", "required_sections": ["Research Decision And Scope", "Control Snapshot", "Scientific Rationale And Scale Decision", "Evidence, Models, And Assumptions", "Stage Roadmap", "Stage Gates And Deliverables", "Resource-Aware Execution Order", "Risks, Negative Results, And Escalation", "Research Spine Synchronization", "Definition Of Done"], "synchronizes": ["research_spine", "claims", "stages", "handoffs", "next_action_queue"], "last_reviewed": "2026-01-01T00:00:00Z"},
   "claims": [{
     "id": "C01",
     "text": "Proton mobility changes the device response across temperature.",

@@ -6,6 +6,16 @@ This package keeps the scientific logic in one place and treats platform feature
 
 The skill must still work when all you have is shell plus file access. Richer platform features are helpers, not dependencies.
 
+## Integrated Planning Artifact
+
+Across Codex, Clouds_Coder.py, Claude Code, and OpenCode, the portable planning artifact is the same project-relative Markdown file:
+
+```text
+workflow/integrated_research_plan.md
+```
+
+Create it for research-design work before launch-ready inputs, regardless of whether the selected route is DFT-only or multiscale. It uses only standard Markdown and stable claim/stage IDs, so no platform-specific planner, frontmatter, or tool call is required. Keep its `Control Snapshot` synchronized with the portable manifest and research spine; use the bundled validators from the copied project-local `scripts/` directory.
+
 ## Clouds_Coder
 
 Recommended entry:

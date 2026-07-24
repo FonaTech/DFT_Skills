@@ -1,4 +1,4 @@
 interface:
   display_name: "Materials Simulation Orchestrator"
-  short_description: "DFT, AIMD, MLIP, FEM, and research-state workflows"
-  default_prompt: "Use $dft-workflow-orchestrator to choose the smallest sufficient simulation scale, confirm complex-task goals, and build a validated DFT, AIMD, MLIP, FEM, or coupled research workflow."
+  short_description: "DFT, AIMD, MLIP, FEM, and detailed research plans"
+  default_prompt: "Use $dft-workflow-orchestrator to choose the smallest sufficient simulation scale, confirm complex-task goals, create an integrated staged research plan, and build a validated DFT, AIMD, MLIP, FEM, or coupled workflow."
