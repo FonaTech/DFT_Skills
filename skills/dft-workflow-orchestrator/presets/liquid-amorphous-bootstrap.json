@@ -1,0 +1,44 @@
+{
+  "name": "liquid-amorphous-bootstrap",
+  "description": "Periodic seed intake for melt-quench AIMD or MLMD, liquid structure, and amorphous-state sampling.",
+  "workflow_tags": [
+    "liquid",
+    "amorphous",
+    "melt-quench",
+    "aimd",
+    "mlmd"
+  ],
+  "required_user_inputs": [
+    "liquid_source",
+    "liquid_value"
+  ],
+  "notes": [
+    "Choose density and composition from the intended state; the preset does not perform melt or quench dynamics.",
+    "Use multiple independent seeds and validate density, coordination, and structural distributions.",
+    "A single quenched cell is not an equilibrium ensemble."
+  ],
+  "entries": [
+    {
+      "label": "liquid_parent",
+      "source": "{{liquid_source}}",
+      "value": "{{liquid_value}}",
+      "filename": "liquid_parent.cif",
+      "normalize": "none",
+      "poscar": "POSCAR_liquid_parent"
+    }
+  ],
+  "derived": [
+    {
+      "label": "liquid_supercell",
+      "source_label": "liquid_parent",
+      "operation": "supercell",
+      "scaling_matrix": [
+        2,
+        2,
+        2
+      ],
+      "poscar": "POSCAR_liquid_supercell"
+    }
+  ],
+  "slabs": []
+}

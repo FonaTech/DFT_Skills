@@ -2,9 +2,9 @@
 
 [English](./README.md) | [中文](./README_zh.md)
 
-Clouds_Coder、Codex、Claude Code、OpenCode 向けのクロスプラットフォーム DFT / VASP workflow skills リポジトリです。
+Clouds_Coder、Codex、Claude Code、OpenCode 向けのクロスプラットフォーム DFT、AIMD、MLIP/MLMD、FEM workflow skills リポジトリです。
 
-本リポジトリには、再利用可能な中核 skill バンドル `dft-workflow-orchestrator` と、それに対応する references、case studies、presets、scripts が含まれます。文献に基づく計算物理・計算材料タスクを、実行可能で再現可能なワークフローとして整理することが目的です。
+本リポジトリには、再利用可能な中核 skill バンドル `dft-workflow-orchestrator` と、それに対応する references、case studies、presets、scripts が含まれます。まず研究判断に必要な最小スケールを選び、必要な場合だけ DFT から AIMD、検証済み MLIP-MD、統計的縮約、FEM へ拡張します。
 
 本リポジトリは、同系統エコシステムである [FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder) 向けにまず最適化されています。特に Clouds_Coder の skill discovery、オンデマンド読み込み、entrypoint ベースの参照、RAG 優先の理論整理、実行境界の制御に合わせています。その一方で、Codex、Claude Code、OpenCode でも利用できるように移植性を維持しています。
 
@@ -152,10 +152,11 @@ flowchart LR
 ## このリポジトリに含まれるもの
 
 - `skills/dft-workflow-orchestrator/` 配下の中核 agent skill
-- theory intake、method selection、project layout、platform interop などの workflow 参考資料
-- 触媒、欠陥、移動障壁、バンド構造、光学、力学、AIMD、plasma、LAMMPS、COMSOL などを含む拡張 case study 群
+- scale routing、複雑タスクの事前確認、theory intake、AIMD、MLIP の選定・学習・active learning、FEM coupling、不確かさ評価の references
+- claim gate、境界付き branch、data/model lineage、decision log、next-action queue による research-spine 制御
+- 触媒、欠陥、移動障壁、バンド構造、光学、力学、AIMD、有限温度相挙動、pretrained MLIP、active-learning MLMD、DFT-FEM、DFT-MLIP-FEM、高スループット探索を含む case study 群
 - 構造取得とプロジェクト立ち上げのための preset manifests
-- preflight、structure intake、job rendering、queue execution、run monitoring、result summarization 用の補助スクリプト
+- cross-stack preflight、multiscale scaffold、manifest validation、MLIP dataset audit、ASE surrogate inference/relaxation、trajectory diagnostics、research-spine maintenance、VASP execution 用の補助スクリプト
 
 ## 対応ランタイム
 
@@ -207,12 +208,13 @@ GitHub 上で扱いやすくするため、リポジトリ内では `claude-plug
 
 ## Clouds_Coder 向け最適化
 
-本リポジトリは、[FonaTech/Clouds-Coder](https://github.com/FonaTech/Clouds-Coder) の `Clouds_Coder.py` が使う実際の skill loader に合わせて構成されています。
+source `SKILL.md` は標準 Agent Skills frontmatter を維持し、Clouds 固有の compact-loading 情報は sidecar overlay に分離しています。
 
-- frontmatter に `name`、`description`、`aliases`、`triggers`、`keywords`、`runtime_compat` を含む
-- `clouds_coder.preferred_tools`、`entrypoints`、`runtime_contract` を含む
+- 標準 source frontmatter は `name` と `description` のみ
+- `agents/clouds-coder.json` が aliases、triggers、entrypoints、attachments、preferred tools、runtime contract を保持
+- `scripts/sync_skill_to_platforms.py --targets clouds --mode copy` が生成先だけに overlay を適用
 - resources を entrypoints と attachments に分け、必要なファイルだけを段階的に読める
-- skill body は Clouds の compact-mode load を発動できる長さに調整済み
+- compatibility checker は標準 source、overlay、生成済み Clouds copy を検証する
 
 互換性確認:
 
@@ -238,6 +240,7 @@ Clouds 向けに最適化されてはいますが、Clouds 専用にはしてい
 - VASP のソースコードやバイナリは含みません
 - `POTCAR` や PAW データは含みません
 - 公式 VASP manual、portal 配布物、公式 wiki アーカイブをミラーしません
+- pretrained MLIP checkpoint、制限付き training data、proprietary FEM model、solver license file は含みません
 - スクリプトは、ユーザーが適法に取得したローカル環境の利用を前提とします
 
 詳細な境界文書:

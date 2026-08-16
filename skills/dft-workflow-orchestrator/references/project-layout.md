@@ -5,6 +5,7 @@ The scaffold script assumes this layout:
 ```text
 project/
 ├── workflow/
+│   ├── integrated_research_plan.md
 │   ├── request_summary.md
 │   ├── knowledge_sources.md
 │   ├── theory_packet.md
@@ -30,9 +31,43 @@ project/
 └── scripts/
 ```
 
+For AIMD, MLIP, MD, FEM, or coupled work, `scaffold_multiscale_project.py` extends the contract:
+
+```text
+project/
+├── workflow/
+│   ├── integrated_research_plan.md
+│   ├── research_contract.md
+│   ├── decision_brief.md
+│   ├── research_spine.md
+│   ├── decision_log.md
+│   ├── claim_matrix.csv
+│   ├── experiment_manifest.json
+│   ├── branch_register.csv
+│   ├── data_lineage.csv
+│   ├── next_action_queue.csv
+│   ├── handoff_register.csv
+│   ├── validation_plan.md
+│   └── risk_register.md
+├── data/{raw,curated,splits,trajectories,exchange}/
+├── models/{checkpoints,cards}/
+├── meshes/
+├── runs/S##_kind/
+├── analysis/S##_kind/
+├── structures/{raw,normalized}/
+├── logs/
+├── joblists/
+└── scripts/
+```
+
 ## Rules
 
 - `workflow/` is the planning authority.
+- `workflow/integrated_research_plan.md` is the detailed narrative route: decision, scope, rationale, staged gates, resource order, risks, and definition of done. Keep it current even for a detailed DFT-only project.
+- `workflow/research_spine.md` is the first-read north-star for long or resumed tasks.
+- `workflow/branch_register.csv` bounds side branches and records merge or kill decisions.
+- `workflow/data_lineage.csv` traces structures, labels, trajectories, datasets, models, meshes, handoffs, and verdicts.
+- `workflow/next_action_queue.csv` keeps work aligned with the current gate and information value.
 - `workflow/structure_manifest.*.json` is the optional landing zone for preset-derived structure intake templates.
 - `structures/` stores source and normalized models.
 - `runs/` contains only executable job directories.
@@ -46,6 +81,7 @@ project/
 
 Do not start production calculations until these exist:
 
+- `workflow/integrated_research_plan.md`
 - `workflow/request_summary.md`
 - `workflow/knowledge_sources.md`
 - `workflow/theory_packet.md`
@@ -53,6 +89,16 @@ Do not start production calculations until these exist:
 - `workflow/experiment_matrix.csv`
 - `workflow/method_guardrails.md`
 - at least one resolved structure under `structures/`
+
+For a multiscale or branching project, also require:
+
+- an integrated plan whose control snapshot agrees with the research spine and manifest
+- a confirmed or explicitly design-tier `workflow/decision_brief.md`
+- a current `workflow/research_spine.md`
+- a non-orphaned `workflow/branch_register.csv`
+- a manifest that passes `validate_experiment_manifest.py --strict`
+- a `workflow/next_action_queue.csv` entry tied to the active claim and gate
+- lineage rows for any artifact consumed by a downstream stage
 
 ## Minimum Files Per VASP Job
 

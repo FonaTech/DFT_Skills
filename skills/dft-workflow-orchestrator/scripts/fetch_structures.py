@@ -8,12 +8,10 @@ import re
 import shutil
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pymatgen.core import Structure
-from pymatgen.core.surface import SlabGenerator
-from pymatgen.io.vasp import Poscar
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+if TYPE_CHECKING:
+    from pymatgen.core import Structure
 
 
 PLACEHOLDER_PATTERN = re.compile(r"\{\{[^{}]+\}\}")
@@ -71,6 +69,8 @@ def reorder_structure(structure: Structure, species_order: list[str]) -> Structu
 def normalize_structure(structure: Structure, mode: str) -> Structure:
     if mode == "none":
         return structure
+    from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+
     analyzer = SpacegroupAnalyzer(structure, symprec=1e-2)
     if mode == "conventional":
         return analyzer.get_conventional_standard_structure()
@@ -130,6 +130,8 @@ def materialize_raw_file(entry: dict[str, Any], raw_dir: Path, source_base: Path
 
 
 def write_poscar(structure: Structure, path: Path) -> None:
+    from pymatgen.io.vasp import Poscar
+
     Poscar(structure).write_file(path)
 
 
@@ -357,6 +359,14 @@ def main() -> int:
     if unresolved_placeholders:
         joined = ", ".join(unresolved_placeholders)
         raise ValueError(f"Manifest contains unresolved placeholders: {joined}")
+
+    try:
+        from pymatgen.core import Structure
+        from pymatgen.core.surface import SlabGenerator
+    except ImportError as exc:
+        raise RuntimeError(
+            "pymatgen is required to fetch or normalize structures; install it or use --list-presets/--write-template first."
+        ) from exc
 
     raw_dir = project_root / "structures" / "raw_cif"
     poscar_dir = project_root / "structures" / "poscar"

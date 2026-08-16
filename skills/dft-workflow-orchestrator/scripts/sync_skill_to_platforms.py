@@ -4,11 +4,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 
 
 SKILL_NAME = "dft-workflow-orchestrator"
+FRONTMATTER_PATTERN = re.compile(r"\A---\r?\n.*?\r?\n---\r?\n", re.DOTALL)
 
 
 def remove_path(path: Path) -> None:
@@ -34,6 +36,19 @@ def symlink_skill(src: Path, dst: Path, force: bool) -> None:
         remove_path(dst)
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.symlink_to(src, target_is_directory=True)
+
+
+def apply_clouds_overlay(skill_dir: Path) -> None:
+    overlay_path = skill_dir / "agents" / "clouds-coder.json"
+    skill_path = skill_dir / "SKILL.md"
+    overlay = json.loads(overlay_path.read_text(encoding="utf-8"))
+    content = skill_path.read_text(encoding="utf-8")
+    match = FRONTMATTER_PATTERN.match(content)
+    if not match:
+        raise ValueError(f"Could not locate standard frontmatter in {skill_path}")
+    body = content[match.end() :]
+    rendered = "---\n" + json.dumps(overlay, indent=2, ensure_ascii=True) + "\n---\n" + body
+    skill_path.write_text(rendered, encoding="utf-8")
 
 
 def target_path(target: str, repo_root: Path) -> Path:
@@ -99,11 +114,17 @@ def main() -> int:
     materialized: list[dict[str, str]] = []
     for target in targets:
         dst = target_path(target, repo_root)
+        if target == "clouds" and args.mode == "symlink":
+            raise ValueError("The Clouds target requires copy mode so its platform overlay does not modify the standard source skill.")
         if args.mode == "copy":
             copy_skill(skill_root, dst, args.force)
         else:
             symlink_skill(skill_root, dst, args.force)
-        materialized.append({"target": target, "path": display_path(dst, repo_root)})
+        overlay = "none"
+        if target == "clouds":
+            apply_clouds_overlay(dst)
+            overlay = "agents/clouds-coder.json"
+        materialized.append({"target": target, "path": display_path(dst, repo_root), "overlay": overlay})
 
     print(json.dumps({"skill_root": display_path(skill_root, repo_root), "materialized": materialized}, indent=2))
     return 0

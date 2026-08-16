@@ -2,135 +2,174 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import tempfile
 from pathlib import Path
+from typing import Any
 
-from Clouds_Coder import SkillStore
+from sync_skill_to_platforms import apply_clouds_overlay
 
 
 SKILL_NAME = "dft-workflow-orchestrator"
+FRONTMATTER_PATTERN = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.DOTALL)
 
 
-def rel(path: Path, base: Path) -> str:
-    try:
-        return path.resolve().relative_to(base.resolve()).as_posix()
-    except Exception:
-        return path.resolve().as_posix()
+def read_overlay(skill_root: Path) -> dict[str, Any]:
+    path = skill_root / "agents" / "clouds-coder.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("Clouds overlay root must be an object.")
+    return payload
 
 
-def find_skill_row(store: SkillStore, name: str = SKILL_NAME) -> dict | None:
+def source_check(skill_root: Path) -> dict[str, Any]:
+    errors: list[str] = []
+    skill_path = skill_root / "SKILL.md"
+    content = skill_path.read_text(encoding="utf-8")
+    match = FRONTMATTER_PATTERN.match(content)
+    if not match:
+        errors.append("Standard SKILL.md frontmatter was not found.")
+        header = ""
+    else:
+        header = match.group(1)
+    if "name: dft-workflow-orchestrator" not in header:
+        errors.append("Standard skill name is missing.")
+    if "description:" not in header:
+        errors.append("Standard skill description is missing.")
+    for forbidden in ("entrypoints:", "attachments:", "clouds_coder:", "triggers:"):
+        if forbidden in header:
+            errors.append(f"Platform field leaked into standard frontmatter: {forbidden[:-1]}")
+    return {"mode": "standard_source", "errors": errors, "frontmatter_lines": len(header.splitlines())}
+
+
+def overlay_check(skill_root: Path) -> dict[str, Any]:
+    errors: list[str] = []
+    overlay = read_overlay(skill_root)
+    if overlay.get("name") != SKILL_NAME:
+        errors.append("Overlay name does not match the skill name.")
+    entrypoints = overlay.get("entrypoints")
+    if not isinstance(entrypoints, list) or not entrypoints:
+        errors.append("Overlay has no entrypoints.")
+        entrypoints = []
+    missing = [path for path in entrypoints if not (skill_root / str(path)).is_file()]
+    if missing:
+        errors.append(f"Overlay entrypoints are missing: {missing}")
+    attachments = overlay.get("attachments")
+    if not isinstance(attachments, list) or not attachments:
+        errors.append("Overlay has no attachment patterns.")
+    clouds = overlay.get("clouds_coder")
+    if not isinstance(clouds, dict):
+        errors.append("Overlay has no clouds_coder object.")
+        clouds = {}
+    if "query_knowledge_library" not in clouds.get("preferred_tools", []):
+        errors.append("query_knowledge_library is missing from preferred tools.")
+    if not str(clouds.get("runtime_contract", "")).strip():
+        errors.append("Clouds runtime contract is empty.")
+    return {
+        "mode": "clouds_overlay",
+        "entrypoint_count": len(entrypoints),
+        "attachment_count": len(attachments) if isinstance(attachments, list) else 0,
+        "missing_entrypoints": missing,
+        "errors": errors,
+    }
+
+
+def find_skill_row(store: Any) -> dict[str, Any] | None:
     for row in store.list_metadata():
-        if row.get("name") == name:
+        if row.get("name") == SKILL_NAME:
             return row
     return None
 
 
-def validate_store(store: SkillStore, *, require_compact: bool) -> dict:
-    row = find_skill_row(store)
-    if not row:
+def runtime_check(rendered_skills_root: Path) -> dict[str, Any]:
+    try:
+        from Clouds_Coder import SkillStore
+    except ImportError:
         return {
-            "skill_present": False,
-            "compact_mode": False,
-            "provider_id": "",
-            "entrypoint_count": 0,
-            "attachment_count": 0,
-            "errors": [f"Skill '{SKILL_NAME}' was not discovered."],
+            "mode": "clouds_runtime",
+            "available": False,
+            "skipped": True,
+            "errors": [],
+            "notes": ["Clouds_Coder is not importable; static overlay and materialization checks were used."],
         }
 
-    load_text = store.load(SKILL_NAME)
-    compact_mode = 'compact_mode="true"' in load_text
+    store = SkillStore(rendered_skills_root)
+    row = find_skill_row(store)
     errors: list[str] = []
-    if require_compact and not compact_mode:
-        errors.append("Clouds compact-mode loading was not triggered.")
+    if not row:
+        errors.append("Rendered skill was not discovered by Clouds_Coder.SkillStore.")
+        return {"mode": "clouds_runtime", "available": True, "skipped": False, "errors": errors}
+    loaded = store.load(SKILL_NAME)
+    compact = 'compact_mode="true"' in loaded
+    if not compact:
+        errors.append("Rendered Clouds skill did not enter compact mode.")
     if not row.get("entrypoints"):
-        errors.append("No entrypoints were registered.")
+        errors.append("Rendered Clouds metadata registered no entrypoints.")
     if not row.get("attachments"):
-        errors.append("No attachments were registered.")
-    runtime_contract = row.get("meta", {}).get("clouds_coder", {}).get("runtime_contract", "")
-    if not str(runtime_contract).strip():
-        errors.append("clouds_coder.runtime_contract is missing.")
-    preferred_tools = row.get("meta", {}).get("clouds_coder", {}).get("preferred_tools", [])
-    if "query_knowledge_library" not in preferred_tools:
-        errors.append("query_knowledge_library is missing from clouds_coder.preferred_tools.")
+        errors.append("Rendered Clouds metadata registered no attachments.")
     return {
-        "skill_present": True,
-        "compact_mode": compact_mode,
-        "provider_id": row.get("provider_id", ""),
+        "mode": "clouds_runtime",
+        "available": True,
+        "skipped": False,
+        "compact_mode": compact,
         "entrypoint_count": len(row.get("entrypoints", [])),
         "attachment_count": len(row.get("attachments", [])),
         "errors": errors,
     }
 
 
-def direct_root_check(package_root: Path) -> dict:
-    skills_root = package_root / "skills"
-    store = SkillStore(skills_root)
-    result = validate_store(store, require_compact=True)
-    result["mode"] = "direct_skills_root"
-    result["skills_root"] = rel(skills_root, Path.cwd())
-    skill_dir = skills_root / SKILL_NAME
-    missing_entrypoints = []
-    row = find_skill_row(store)
-    if row:
-        for entry in row.get("entrypoints", []):
-            if not (skill_dir / entry).exists():
-                missing_entrypoints.append(entry)
-    result["missing_entrypoints"] = missing_entrypoints
-    if missing_entrypoints:
-        result["errors"].append("Some entrypoints do not exist on disk.")
-    return result
-
-
-def external_discovery_check(package_root: Path) -> dict:
-    with tempfile.TemporaryDirectory(prefix="clouds-skill-ext-") as tmpdir:
-        workspace = Path(tmpdir)
-        (workspace / "skills").mkdir(parents=True, exist_ok=True)
-        linked_package = workspace / package_root.name
-        linked_package.symlink_to(package_root.resolve(), target_is_directory=True)
-        store = SkillStore(workspace / "skills")
-        result = validate_store(store, require_compact=True)
-        result["mode"] = "external_library_auto_discovery"
-        result["skills_root"] = "skills"
-        result["external_package"] = package_root.name
-        return result
-
-
-def mirrored_project_check(package_root: Path) -> dict:
-    sync_script = package_root / "skills" / SKILL_NAME / "scripts" / "sync_skill_to_platforms.py"
-    with tempfile.TemporaryDirectory(prefix="clouds-skill-mirror-") as tmpdir:
-        workspace = Path(tmpdir)
-        (workspace / "skills").mkdir(parents=True, exist_ok=True)
-        target = workspace / "skills" / "generated" / SKILL_NAME
-        if target.exists():
-            shutil.rmtree(target)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(package_root / "skills" / SKILL_NAME, target, ignore=shutil.ignore_patterns("__pycache__", ".DS_Store"))
-        store = SkillStore(workspace / "skills")
-        result = validate_store(store, require_compact=True)
-        result["mode"] = "project_local_clouds_mirror"
-        result["skills_root"] = "skills"
-        result["mirrored_skill"] = f"skills/generated/{SKILL_NAME}"
-        result["sync_script"] = rel(sync_script, Path.cwd())
-        return result
+def rendered_check(skill_root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    with tempfile.TemporaryDirectory(prefix="clouds-skill-render-") as tmpdir:
+        skills_root = Path(tmpdir) / "skills"
+        rendered = skills_root / SKILL_NAME
+        rendered.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(skill_root, rendered, ignore=shutil.ignore_patterns("__pycache__", ".DS_Store"))
+        apply_clouds_overlay(rendered)
+        content = (rendered / "SKILL.md").read_text(encoding="utf-8")
+        match = FRONTMATTER_PATTERN.match(content)
+        errors: list[str] = []
+        frontmatter: dict[str, Any] = {}
+        if not match:
+            errors.append("Rendered SKILL.md has no frontmatter.")
+        else:
+            try:
+                frontmatter = json.loads(match.group(1))
+            except json.JSONDecodeError as exc:
+                errors.append(f"Rendered frontmatter is not the expected JSON-compatible YAML: {exc}")
+        if frontmatter.get("entrypoints") is None:
+            errors.append("Rendered frontmatter has no entrypoints.")
+        if frontmatter.get("clouds_coder") is None:
+            errors.append("Rendered frontmatter has no clouds_coder contract.")
+        static = {
+            "mode": "rendered_clouds_copy",
+            "frontmatter_keys": sorted(frontmatter),
+            "body_present": bool(match and content[match.end() :].strip()),
+            "errors": errors,
+        }
+        return static, runtime_check(skills_root)
 
 
 def main() -> int:
-    package_root = Path(__file__).resolve().parents[3]
-    checks = [
-        direct_root_check(package_root),
-        external_discovery_check(package_root),
-        mirrored_project_check(package_root),
-    ]
-    ok = all(not item.get("errors") for item in checks)
+    skill_root = Path(__file__).resolve().parents[1]
+    checks: list[dict[str, Any]] = []
+    try:
+        checks.append(source_check(skill_root))
+        checks.append(overlay_check(skill_root))
+        rendered, runtime = rendered_check(skill_root)
+        checks.extend([rendered, runtime])
+    except Exception as exc:
+        checks.append({"mode": "unexpected_exception", "errors": [f"{type(exc).__name__}: {exc}"]})
+    errors = [message for check in checks for message in check.get("errors", [])]
     payload = {
-        "package_root": rel(package_root, Path.cwd()),
         "skill_name": SKILL_NAME,
-        "ok": ok,
+        "skill_root": str(skill_root),
+        "ok": not errors,
         "checks": checks,
+        "errors": errors,
     }
-    print(json.dumps(payload, indent=2, ensure_ascii=False))
-    return 0 if ok else 1
+    print(json.dumps(payload, indent=2, ensure_ascii=True))
+    return 0 if not errors else 1
 
 
 if __name__ == "__main__":

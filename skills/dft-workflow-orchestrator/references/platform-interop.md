@@ -6,12 +6,23 @@ This package keeps the scientific logic in one place and treats platform feature
 
 The skill must still work when all you have is shell plus file access. Richer platform features are helpers, not dependencies.
 
+## Integrated Planning Artifact
+
+Across Codex, Clouds_Coder.py, Claude Code, and OpenCode, the portable planning artifact is the same project-relative Markdown file:
+
+```text
+workflow/integrated_research_plan.md
+```
+
+Create it for research-design work before launch-ready inputs, regardless of whether the selected route is DFT-only or multiscale. It uses only standard Markdown and stable claim/stage IDs, so no platform-specific planner, frontmatter, or tool call is required. Keep its `Control Snapshot` synchronized with the portable manifest and research spine; use the bundled validators from the copied project-local `scripts/` directory.
+
 ## Clouds_Coder
 
 Recommended entry:
 
-- install or mirror into the local `skills/` tree so `SKILL.md` is auto-discovered
-- preferred project-local path in this repository: `skills/generated/dft-workflow-orchestrator/`
+- use the standard source skill directly for portable full-body loading
+- for Clouds compact loading, materialize a copy with `scripts/sync_skill_to_platforms.py --targets clouds --mode copy`; this applies `agents/clouds-coder.json` only to the generated target
+- preferred optimized project-local path: `skills/generated/dft-workflow-orchestrator/`
 - external-library discovery also works when `DFT_Skills/` is kept adjacent to the active `skills/` directory, because `Clouds_Coder.py` scans sibling directories for `skills/*/SKILL.md`
 
 Preferred accelerators:
@@ -40,14 +51,14 @@ Native compatibility notes:
 - keep reusable assets inside the skill bundle only
 - keep generated calculation work outside the skill bundle, in a user project root such as `project/workflow`, `project/structures`, `project/runs`, and `project/analysis`
 - do not write run outputs, logs, or relaxed structures back into the skill directory during normal execution
-- preserve `clouds_coder.preferred_tools`, `entrypoints`, and `runtime_contract` in frontmatter so the runtime can inject the right attachment set and boundary hints
+- keep `SKILL.md` standard and preserve `clouds_coder.preferred_tools`, `entrypoints`, and `runtime_contract` in `agents/clouds-coder.json`; the sync script renders them into the Clouds copy
 - preserve enough body detail that `load_skill` enters compact-mode loading, so the runtime shows the contract plus resource manifest first and deeper files stay on demand
 - use `query_knowledge_library` proactively on theory-heavy tasks, but only after uploaded and local materials have been checked first
 - keep front-end monitoring alive with `scripts/monitor_vasp_runs.py` when queues are running in the background
 
 Validation helper:
 
-- run `python3 scripts/verify_clouds_compat.py` from the skill directory to check direct-root loading, sibling-library auto-discovery, project-local mirroring, and compact-mode behavior
+- run `python3 scripts/verify_clouds_compat.py` from the skill directory to check the standard source, overlay entrypoints, rendered copy, and compact-mode behavior when `Clouds_Coder` is importable
 
 ## Claude Code
 
@@ -88,8 +99,8 @@ On Codex surfaces without a dedicated RAG tool, emulate the same policy with loc
 
 ## Portability Rules
 
-- keep frontmatter conservative: `name`, `description`, `license`, `compatibility`, and flat-string `metadata`
-- add platform-specific enhancement fields only as optional overlays, not as hard dependencies
+- keep standard `SKILL.md` frontmatter limited to `name` and `description`
+- keep platform-specific enhancement fields in sidecar overlays, not in the portable source frontmatter
 - keep reusable automation in `scripts/`
 - keep long methodology in `references/`
 - never require proprietary platform-only tool names to complete the workflow

@@ -62,6 +62,9 @@ python3 scripts/fetch_structures.py \
 - [aimd-stability-seed.json](aimd-stability-seed.json): bulk plus moderate supercell seed for ab initio molecular dynamics.
 - [plasma-surface-proxy.json](plasma-surface-proxy.json): surface parent and feedstock intake for plasma-surface proxy calculations.
 - [lammps-mlff-handoff.json](lammps-mlff-handoff.json): structure intake for DFT-to-MLFF or LAMMPS handoff preparation.
+- [mlip-active-learning-seed.json](mlip-active-learning-seed.json): seed bulk and supercell for DFT labeling, MLIP active learning, and guarded MLMD.
+- [liquid-amorphous-bootstrap.json](liquid-amorphous-bootstrap.json): periodic parent and supercell for melt-quench, liquid, and amorphous sampling.
 - [comsol-property-handoff.json](comsol-property-handoff.json): bulk reference for property extraction to continuum or multiphysics models.
+- [dft-fem-property-basis.json](dft-fem-property-basis.json): reference-cell intake for tensor and constitutive extraction before FEM coupling.
 - [phonon-thermal-transport.json](phonon-thermal-transport.json): bulk plus supercell seed for phonons and thermal transport.
 - [oxide-protonation-supercell.json](oxide-protonation-supercell.json): oxide supercell plus protonated seed for insertion or local-bonding studies.

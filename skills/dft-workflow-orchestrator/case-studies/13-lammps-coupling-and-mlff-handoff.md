@@ -6,6 +6,8 @@ Use this case when DFT is the upstream truth source for a later LAMMPS, classica
 
 Do not use this case if the downstream workflow has not yet defined what environments, temperatures, defects, or interfaces it must cover.
 
+Read `references/mlip-workflows.md` before choosing a model family, split, active-learning rule, or production driver. Use case 17 for bounded pretrained screening and case 18 for the full active-learning-to-production lifecycle.
+
 ## Questions This Workflow Must Answer
 
 - What chemistry and configuration space will the downstream force field actually encounter?
